@@ -101,7 +101,7 @@ export default {
     },
     sendMessage() {
       if (!this.isVerified) {
-        alert('请先验证密钥！')
+        this.$message.warn('请先验证密钥！')
         return
       }
       const trimmedMessage = this.userMessage.trim()
@@ -216,7 +216,7 @@ export default {
         return
       }
       if (this.sessions.length >= 15) {
-        alert('最多只能创建10个新会话！')
+        this.$message.warn('最多只能创建10个新会话！')
         return
       }
       const sessionId = this.generateSessionId()
@@ -261,7 +261,7 @@ export default {
         this.isVerified = true
         return
       } else if (message.content === 'failure') {
-        alert('密钥错误，请重新输入！！！')
+        this.$message.error('密钥错误，请重新输入！！！')
         this.verificationKey = ''
         return
       }
@@ -306,7 +306,7 @@ export default {
     },
     verifyKey() {
       if (this.verificationKey === '') {
-        alert('密钥不能为空！！！')
+        this.$message.warn('密钥不能为空！！！')
         return
       }
       const message = {
