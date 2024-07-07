@@ -427,6 +427,7 @@ export default {
             type="textarea"
             class="message-textarea"
             v-model="userMessage"
+            @keyup.enter="sendMessage"
             placeholder="请输入文本"
             style="width: 40%"
             autosize/>
