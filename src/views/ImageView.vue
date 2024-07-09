@@ -22,6 +22,8 @@ const generateImage = async () => {
     ElMessage.warn('请先验证密钥！')
     return
   }
+  // temp
+  conversation.value = []
   const trimmedMessage = userMessage.value.trim()
   if (trimmedMessage && webSocketService.getReadyState()) {
     conversation.value.push({
@@ -36,6 +38,7 @@ const generateImage = async () => {
         content: msg.text
       }))
     }
+    console.log(message)
     webSocketService.sendMessage(JSON.stringify(message))
   }
   userMessage.value = ''
