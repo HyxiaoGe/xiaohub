@@ -13,17 +13,11 @@
     position: relative;
 }
 
-.greeting {
-    margin: 450px auto 0 auto;
-    color: #fff;
-    font-size: 30px;
-}
-
 .messages {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    margin: 0 10px;
+    max-height: 80vh;
 }
 
 .message {
@@ -38,14 +32,26 @@
     background: #f9f9f9;
 }
 
-.code-block {
-    background: #282c34;
-    color: #abb2bf;
-    padding: 10px;
-    border-radius: 5px;
-    margin: 5px 0;
-    font-family: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
-    overflow-x: auto;
+.user-text-content {}
+
+.robot-text-content {
+    background-color: #e0d9d9;  /* 浅灰色背景 */
+    color: #333;  
+    padding: 15px;  
+    border-radius: 8px; 
+    margin: 10px 0;  
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  
+    line-height: 1.6;  
+    font-size: 16px;  
+}
+
+.message-image {
+    max-width: 100%;
+    max-height: 500px;
+    height: auto;
+    display: block;
+    margin-top: 5px;
+    object-fit: contain;
 }
 
 .fa-user,
@@ -61,7 +67,7 @@
     max-width: 50%;
     justify-content: flex-start;
     align-self: flex-start;
-    background-color: #007bff;
+    background-color: #afc8ef;
 }
 
 .user {

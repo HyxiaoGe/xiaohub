@@ -4,7 +4,7 @@
   <div id="nav">
     <router-link to="/"></router-link>
     <router-link to="/chat"></router-link>
-    <router-link to="/draw"></router-link>
+    <router-link to="/image"></router-link>
     <router-link to="/video"></router-link>
     <router-link to="/about"></router-link>
   </div>

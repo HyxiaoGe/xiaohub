@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import Chat from '../views/ChatView.vue'
-import Draw from '../views/DrawView.vue'
+import Image from '../views/ImageView.vue'
 import Video from '../views/VideoView.vue'
 
 const router = createRouter({
@@ -18,9 +18,9 @@ const router = createRouter({
       component: Chat
     },
     {
-      path: '/draw',
-      name: 'draw',
-      component: Draw
+      path: '/image',
+      name: 'image',
+      component: Image
     },
     {
       path: '/video',

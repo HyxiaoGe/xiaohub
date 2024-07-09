@@ -16,7 +16,7 @@
               />
             </el-tooltip>
           </router-link>
-          <router-link to="/draw" custom v-slot="{ navigate }">
+          <router-link to="/image" custom v-slot="{ navigate }">
             <el-tooltip content="AI 生图" placement="top">
               <el-button
                 class="img-button"
