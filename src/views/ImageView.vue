@@ -11,7 +11,8 @@ const currentAssistantMessage = ref('')
 const imgUrl = ref('')
 
 onMounted(() => {
-  webSocketService.initializeWebSocket('ws://localhost:8809/ws')
+  // webSocketService.initializeWebSocket('ws://localhost:8809/ws')
+  webSocketService.initializeWebSocket(`ws://${process.env.VITE_APP_END_POINT}/image/ws`)
   webSocketService.registerMessageHandler(handleWebSocketMessage)
 })
 

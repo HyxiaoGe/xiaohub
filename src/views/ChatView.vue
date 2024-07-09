@@ -38,7 +38,7 @@ export default {
   },
   created() {
     // WebSocketService.initializeWebSocket('ws://localhost:8808/ws')
-    WebSocketService.initializeWebSocket(`ws://${process.env.VITE_APP_END_POINT}/ws`)
+    WebSocketService.initializeWebSocket(`ws://${process.env.VITE_APP_END_POINT}/chat/ws`)
     WebSocketService.registerMessageHandler(this.handleWebSocketMessage)
     this.isVerified = SessionService.get('isVerified') === 'true'
     this.loadActiveSession()
@@ -54,13 +54,13 @@ export default {
       }
       this.loadActiveSessionMessages()
     },
-    initializeQueues(){
-      this.sessions.forEach(session => {
-        this.initMessageQueueForSession(session.id);
-      });
+    initializeQueues() {
+      this.sessions.forEach((session) => {
+        this.initMessageQueueForSession(session.id)
+      })
     },
     initMessageQueueForSession(sessionId) {
-      this.messageQueues[sessionId] = [];
+      this.messageQueues[sessionId] = []
     },
     onScroll() {
       const messagesContainer = this.$refs.messagesContainer
@@ -174,7 +174,7 @@ export default {
       }
 
       // 重置累积消息
-      this.currentAssistantMessage = '';
+      this.currentAssistantMessage = ''
 
       // 更新当前会话为活跃会话
       this.activeSessionId = sessionId
@@ -186,23 +186,21 @@ export default {
         this.conversation = [...currentSession.messages]
         //  将之前的消息继续生成完毕
         if (this.messageQueues[sessionId]) {
-          this.messageQueues[sessionId].forEach(message => {
+          this.messageQueues[sessionId].forEach((message) => {
             this.updateConversation(sessionId, message)
-        })
+          })
           this.messageQueues[sessionId] = []
         }
       } else {
         this.conversation = []
       }
-      
 
       if (this.messageQueues[sessionId]) {
-        this.messageQueues[sessionId].forEach(message => {
+        this.messageQueues[sessionId].forEach((message) => {
           this.updateConversation(sessionId, message)
         })
         this.messageQueues[sessionId] = []
       }
-
     },
     saveCurrentSessionMessages() {
       // 找到当前活动会话，并保存消息
@@ -223,7 +221,7 @@ export default {
       // 直接创建一个新会话，不需要复制当前对话内容
       const newSession = SessionService.create(sessionId)
       this.sessions.push(newSession)
-      this.initMessageQueueForSession(sessionId);
+      this.initMessageQueueForSession(sessionId)
       SessionService.save(this.sessions)
     },
     loadActiveSessionMessages() {
@@ -269,31 +267,37 @@ export default {
       if (this.messageQueues[message.sessionId]) {
         this.messageQueues[message.sessionId].push(message.content)
         if (message.sessionId === this.activeSessionId) {
-        this.updateConversation(message.sessionId, message.content)
+          this.updateConversation(message.sessionId, message.content)
         }
       }
     },
-    updateConversation(sessionId, data){
-      const activeSession = this.sessions.find(session => session.id === sessionId);
+    updateConversation(sessionId, data) {
+      const activeSession = this.sessions.find((session) => session.id === sessionId)
       if (activeSession) {
         if (data === '[DONE]') {
-          this.currentAssistantMessage = '' 
+          this.currentAssistantMessage = ''
         } else {
           // 实时更新累积的消息，且只更新当前活动会话的累积消息
           if (sessionId === this.activeSessionId) {
-            this.currentAssistantMessage += data;
+            this.currentAssistantMessage += data
           }
           // 然后更新到对话中以实时渲染，检查对话数组中最后一条消息是否属于助手且未完成
-          if (this.conversation.length > 0 && this.conversation[this.conversation.length - 1].role === 'assistant' && !this.conversation[this.conversation.length - 1].done) {
+          if (
+            this.conversation.length > 0 &&
+            this.conversation[this.conversation.length - 1].role === 'assistant' &&
+            !this.conversation[this.conversation.length - 1].done
+          ) {
             // 更新最后一条消息的文本
-            this.conversation[this.conversation.length - 1].content = JSON.stringify([{type: 'text', text: this.currentAssistantMessage}])
+            this.conversation[this.conversation.length - 1].content = JSON.stringify([
+              { type: 'text', text: this.currentAssistantMessage }
+            ])
           } else {
             // 否则，添加一个新的消息条目
             this.conversation.push({
-              content: JSON.stringify([{type: 'text', text: this.currentAssistantMessage}]),
+              content: JSON.stringify([{ type: 'text', text: this.currentAssistantMessage }]),
               role: 'assistant',
               done: false
-            });
+            })
           }
         }
         if (sessionId === this.activeSessionId) {
@@ -323,31 +327,31 @@ export default {
       return date.toLocaleTimeString()
     },
     handleFileUpload(file, fileList) {
-      const isJPG = file.raw.type === 'image/jpeg';
-      const isPNG = file.raw.type === 'image/png';
-      const isLt256KB = file.raw.size / 1024 < 256; // 文件大小限制为256KB
+      const isJPG = file.raw.type === 'image/jpeg'
+      const isPNG = file.raw.type === 'image/png'
+      const isLt256KB = file.raw.size / 1024 < 256 // 文件大小限制为256KB
 
       if (!isJPG && !isPNG) {
-        this.$message.error('上传图片只能是 JPG/PNG 格式!');
+        this.$message.error('上传图片只能是 JPG/PNG 格式!')
         // 移除不符合条件的文件
-        this.fileList = fileList.slice(0, fileList.length - 1);
-        return false;
+        this.fileList = fileList.slice(0, fileList.length - 1)
+        return false
       }
       if (!isLt256KB) {
-        this.$message.error('上传图片大小不能超过 256KB!');
+        this.$message.error('上传图片大小不能超过 256KB!')
         // 移除不符合条件的文件
-        this.fileList = fileList.slice(0, fileList.length - 1);
-        return false;
+        this.fileList = fileList.slice(0, fileList.length - 1)
+        return false
       }
 
       // 更新文件列表
-      this.fileList = fileList;
+      this.fileList = fileList
     },
     handleUploadSuccess(response, file, fileList) {
-      console.log('上传成功', response, file, fileList);
+      console.log('上传成功', response, file, fileList)
     },
     handleUploadError(error, file, fileList) {
-      console.error('上传失败', error, file, fileList);
+      console.error('上传失败', error, file, fileList)
     },
     generateSessionId() {
       const currentTimestampInMs = Date.now()
@@ -390,11 +394,14 @@ export default {
       </div>
       <div class="messages" ref="messagesContainer">
         <div v-for="(msg, index) in conversation" :key="index" :class="['message', msg.role]">
-          <i :class="['icon', msg.role === 'user' ? 'fa-solid fa-user-tie' : 'fa-solid fa-robot']"></i>
+          <i
+            :class="['icon', msg.role === 'user' ? 'fa-solid fa-user-tie' : 'fa-solid fa-robot']"
+          ></i>
           <div
             v-if="isCodeBlock(msg.content)"
             class="code-block"
-            v-html="renderMarkdown(msg.content)"></div>
+            v-html="renderMarkdown(msg.content)"
+          ></div>
           <div v-else class="text" v-html="renderMarkdown(msg.content)"></div>
           <div class="timestamp" v-if="msg.role === 'user'">{{ formatTime(msg.time) }}</div>
         </div>
@@ -404,24 +411,31 @@ export default {
           class="scroll-to-bottom"
           style="font-size: 24px"
           icon="Bottom"
-          @click="scrollToBottom"/>
+          @click="scrollToBottom"
+        />
       </div>
       <div v-if="isVerified">
         <div class="input-area">
           <el-tooltip content="上传文件" placement="top">
-              <el-upload
-                class="upload-file"
-                action="/"  
-                :on-change="handleFileUpload"
-                :on-success="handleUploadSuccess"
-                :on-error="handleUploadError"
-                :file-list="fileList"
-                list-type="picture"
-                :auto-upload="false">
-                <template #trigger>
-                  <el-button class="file-upload-icon" style="font-size: 24px" icon="UploadFilled" type="primary"></el-button>
-                </template>
-              </el-upload>
+            <el-upload
+              class="upload-file"
+              action="/"
+              :on-change="handleFileUpload"
+              :on-success="handleUploadSuccess"
+              :on-error="handleUploadError"
+              :file-list="fileList"
+              list-type="picture"
+              :auto-upload="false"
+            >
+              <template #trigger>
+                <el-button
+                  class="file-upload-icon"
+                  style="font-size: 24px"
+                  icon="UploadFilled"
+                  type="primary"
+                ></el-button>
+              </template>
+            </el-upload>
           </el-tooltip>
           <el-input
             type="textarea"
@@ -430,21 +444,24 @@ export default {
             @keyup.enter="sendMessage"
             placeholder="请输入文本"
             style="width: 40%"
-            autosize/>
+            autosize
+          />
           <el-button
             type="success"
             icon="Promotion"
             @click="sendMessage"
             class="send-button"
             style="font-size: 24px"
-            :disabled="!userMessage.trim() && !uploadedFile"/>
+            :disabled="!userMessage.trim() && !uploadedFile"
+          />
           <el-tooltip content="清空上下文" placement="top">
             <el-button
               style="font-size: 24px"
               type="primary"
               class="clear-conversation"
               icon="Delete"
-              @click="clearConversation"/>
+              @click="clearConversation"
+            />
           </el-tooltip>
         </div>
       </div>
