@@ -140,6 +140,7 @@ export default {
           )
         }
         if (this.uploadedFile) {
+          this.uploadFile()
           const reader = new FileReader()
           reader.onload = (event) => {
             const base64File = event.target.result
@@ -346,6 +347,40 @@ export default {
 
       // 更新文件列表
       this.fileList = fileList
+      this.uploadedFile = file.raw
+    },
+    uploadFile() {
+      const fileName = this.uploadedFile.name
+      console.log('file: ', this.uploadedFile)
+      // const tokenUrl = `${process.env.TOKEN_URL}?fileName=${fileName}`
+      const tokenUrl = 'http://127.0.0.1:3001/osstoken'
+
+      fetch(tokenUrl).then(async (response) => {
+        const { policy, signature, accessid, host, dir, stsToken } = await response.json()
+        const formData = new FormData()
+        formData.append('success_action_status', '200') // 指定成功上传时，服务端返回状态码200，默认返回204。
+        formData.append('policy', policy)
+        formData.append('signature', signature)
+        formData.append('OSSAccessKeyId', accessid)
+        if (stsToken) formData.append('x-oss-security-token', stsToken)
+
+        formData.append('key', dir + fileName) // 文件名
+        formData.append('file', this.uploadedFile) // file必须为最后一个表单域
+
+        const param = {
+          method: 'POST',
+          body: formData
+        }
+        fetch(host, param)
+          .then((data) => {
+            console.log(data)
+            this.uploadedFile = null
+            this.fileList = []
+          })
+          .catch((error) => {
+            console.error('Error:', error)
+          })
+      })
     },
     handleUploadSuccess(response, file, fileList) {
       console.log('上传成功', response, file, fileList)
