@@ -29,10 +29,9 @@ export default {
       ],
       activeSessionId: 1,
       uploadedFile: null,
+      uploadedFileUrl: '',
       base64Url: null,
       messageQueues: {},
-      dialogImageUrl: '',
-      dialogVisible: false,
       fileList: []
     }
   },
@@ -124,6 +123,7 @@ export default {
           ]),
           time: new Date(),
           role: 'user',
+          imgUrl: null,
           done: true // 标记为完成
         })
         //  对话上下文只支持最近5次对话(固定首Prompt)
@@ -259,9 +259,14 @@ export default {
         localStorage.setItem('isVerified', 'true')
         this.isVerified = true
         return
-      } else if (message.content === 'failure') {
+      }
+      if (message.content === 'failure') {
         this.$message.error('密钥错误，请重新输入！！！')
         this.verificationKey = ''
+        return
+      }
+      if (message.sessionId === 99999) {
+        this.$message.error(message.content)
         return
       }
       //  将消息添加到对应会话的队列中
@@ -309,6 +314,15 @@ export default {
         }
       }
     },
+    updateConversationWithImageUrl(imgUrl) {
+      // 用户的最后一条消息是当前上传的图片关联的
+      const lastMessage = this.conversation[this.conversation.length - 1]
+      if (lastMessage && lastMessage.role === 'user') {
+        lastMessage.imgUrl = imgUrl
+        this.conversation[this.conversation.length - 1] = lastMessage
+        this.scrollToBottom()
+      }
+    },
     verifyKey() {
       if (this.verificationKey === '') {
         this.$message.warn('密钥不能为空！！！')
@@ -353,10 +367,10 @@ export default {
       const fileName = this.uploadedFile.name
       console.log('file: ', this.uploadedFile)
       // const tokenUrl = `${process.env.TOKEN_URL}?fileName=${fileName}`
-      const tokenUrl = 'http://127.0.0.1:3001/osstoken'
+      const tokenUrl = 'http://127.0.0.1:3001/osstoken?filename=' + fileName
 
       fetch(tokenUrl).then(async (response) => {
-        const { policy, signature, accessid, host, dir, stsToken } = await response.json()
+        const { policy, signature, accessid, host, dir, stsToken, imgUrl } = await response.json()
         const formData = new FormData()
         formData.append('success_action_status', '200') // 指定成功上传时，服务端返回状态码200，默认返回204。
         formData.append('policy', policy)
@@ -367,6 +381,10 @@ export default {
         formData.append('key', dir + fileName) // 文件名
         formData.append('file', this.uploadedFile) // file必须为最后一个表单域
 
+        console.log(imgUrl)
+
+        this.uploadedFileUrl = imgUrl
+
         const param = {
           method: 'POST',
           body: formData
@@ -374,6 +392,8 @@ export default {
         fetch(host, param)
           .then((data) => {
             console.log(data)
+            this.$message.success('上传成功！')
+            this.updateConversationWithImageUrl(imgUrl)
             this.uploadedFile = null
             this.fileList = []
           })
@@ -432,12 +452,10 @@ export default {
           <i
             :class="['icon', msg.role === 'user' ? 'fa-solid fa-user-tie' : 'fa-solid fa-robot']"
           ></i>
-          <div
-            v-if="isCodeBlock(msg.content)"
-            class="code-block"
-            v-html="renderMarkdown(msg.content)"
-          ></div>
-          <div v-else class="text" v-html="renderMarkdown(msg.content)"></div>
+          <div v-if="msg.imgUrl" class="image-container">
+            <img :src="msg.imgUrl" alt="Uploaded Image" />
+          </div>
+          <div class="text" v-html="renderMarkdown(msg.content)"></div>
           <div class="timestamp" v-if="msg.role === 'user'">{{ formatTime(msg.time) }}</div>
         </div>
         <el-button

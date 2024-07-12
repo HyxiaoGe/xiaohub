@@ -11,8 +11,8 @@ const currentAssistantMessage = ref('')
 const imgUrl = ref('')
 
 onMounted(() => {
-  // webSocketService.initializeWebSocket('ws://localhost:8809/ws')
-  webSocketService.initializeWebSocket(`ws://${process.env.VITE_APP_END_POINT}/image/ws`)
+  webSocketService.initializeWebSocket('ws://localhost:8809/ws')
+  // webSocketService.initializeWebSocket(`ws://${process.env.VITE_APP_END_POINT}/image/ws`)
   webSocketService.registerMessageHandler(handleWebSocketMessage)
 })
 
@@ -109,7 +109,6 @@ const clearConversation = () => {
             v-text="msg.text"
           ></div>
           <img v-if="msg.imageUrl" :src="msg.imageUrl" alt="Generate image" class="message-image" />
-          <!-- <div class="timestamp">{{ msg.time }}</div>  -->
         </div>
       </div>
       <div v-if="isVerified">
