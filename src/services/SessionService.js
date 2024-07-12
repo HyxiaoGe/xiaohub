@@ -1,10 +1,6 @@
 class SessionService {
-  load() {
-    return JSON.parse(localStorage.getItem('sessions')) || []
-  }
-
-  save(sessions) {
-    localStorage.setItem('sessions', JSON.stringify(sessions))
+  save(item, sessions) {
+    localStorage.setItem(item, JSON.stringify(sessions))
   }
 
   get(item) {

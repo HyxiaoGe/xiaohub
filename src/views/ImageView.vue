@@ -1,20 +1,34 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { debounce } from 'lodash'
 import { ElMessage } from 'element-plus'
 import sessionService from '@/services/SessionService'
 import webSocketService from '@/services/WebSocketService'
 
 const verificationKey = ref('')
+const sessions = ref([])
 const conversation = ref([])
 const userMessage = ref('')
 const currentAssistantMessage = ref('')
 const imgUrl = ref('')
 
-onMounted(() => {
+onMounted(async () => {
   webSocketService.initializeWebSocket('ws://localhost:8809/ws')
   // webSocketService.initializeWebSocket(`ws://${process.env.VITE_APP_END_POINT}/image/ws`)
   webSocketService.registerMessageHandler(handleWebSocketMessage)
+  const sessionsFromStorage = sessionService.get('imageSessions')
+  if (sessionsFromStorage) {
+    conversation.value = JSON.parse(sessionsFromStorage)
+  }
 })
+
+watch(
+  conversation,
+  () => {
+    debouncedSave()
+  },
+  { deep: true }
+)
 
 const isVerified = sessionService.get('isVerified') === 'true'
 const generateImage = async () => {
@@ -76,6 +90,7 @@ const updateConversation = () => {
       done: false
     })
   }
+  sessions.value = conversation.value
 }
 
 const markLastMessageAsDone = () => {
@@ -83,6 +98,10 @@ const markLastMessageAsDone = () => {
     conversation.value[conversation.value.length - 1].done = true
   }
 }
+
+const debouncedSave = debounce(() => {
+  sessionService.save('imageSessions', conversation.value)
+}, 500)
 
 const clearConversation = () => {
   if (confirm('确定要清空上下文吗？')) {

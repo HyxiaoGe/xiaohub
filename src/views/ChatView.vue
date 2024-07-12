@@ -47,7 +47,7 @@ export default {
   },
   methods: {
     loadSessionsFromLocalStorage() {
-      const savedSessions = SessionService.get('sessions')
+      const savedSessions = SessionService.get('chatSessions')
       if (savedSessions) {
         this.sessions = JSON.parse(savedSessions)
       }
@@ -154,7 +154,7 @@ export default {
         this.base64Url = message.file
         this.userMessage = ''
         this.scrollToBottom()
-        SessionService.save(this.sessions)
+        SessionService.save('chatSessions', this.sessions)
       }
     },
     loadActiveSession() {
@@ -171,7 +171,7 @@ export default {
       const previousSession = SessionService.findSessionById(this.sessions, this.activeSessionId)
       if (previousSession) {
         previousSession.messages = [...this.conversation]
-        SessionService.save(this.sessions)
+        SessionService.save('chatSessions', this.sessions)
       }
 
       // 重置累积消息
@@ -223,7 +223,7 @@ export default {
       const newSession = SessionService.create(sessionId)
       this.sessions.push(newSession)
       this.initMessageQueueForSession(sessionId)
-      SessionService.save(this.sessions)
+      SessionService.save('chatSessions', this.sessions)
     },
     loadActiveSessionMessages() {
       if (!this.isVerified) {
@@ -249,7 +249,7 @@ export default {
         const activeSession = this.sessions.find((session) => session.id === this.activeSessionId)
         if (activeSession) {
           activeSession.messages = [...this.conversation]
-          SessionService.save(this.sessions)
+          SessionService.save('chatSessions', this.sessions)
         }
       }
     },
@@ -309,7 +309,7 @@ export default {
         if (sessionId === this.activeSessionId) {
           // 由于数组中对象的属性发生了变化，确保更新视图
           activeSession.messages = [...this.conversation]
-          SessionService.save(this.sessions)
+          SessionService.save('chatSessions', this.sessions)
           this.scrollToBottom()
         }
       }
