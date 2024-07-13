@@ -59,6 +59,7 @@ const handleWebSocketMessage = (message) => {
   const messageObj = JSON.parse(message)
   if (messageObj.type === 'image') {
     imgUrl.value = messageObj.content
+    // TODO 返回图片保存至阿里云OSS
   } else if (messageObj.type === 'text') {
     if (messageObj.content === '[DONE]') {
       // 标记当前消息为完成

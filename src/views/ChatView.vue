@@ -366,11 +366,11 @@ export default {
     uploadFile() {
       const fileName = this.uploadedFile.name
       console.log('file: ', this.uploadedFile)
-      // const tokenUrl = `${process.env.TOKEN_URL}?fileName=${fileName}`
-      const tokenUrl = 'http://127.0.0.1:3001/osstoken?filename=' + fileName
-
+      const tokenUrl = `http://${process.env.VITE_APP_END_POINT}/osstoken?filename=${fileName}`
+      // const tokenUrl = 'http://127.0.0.1:3001/osstoken?filename=' + fileName
       fetch(tokenUrl).then(async (response) => {
         const { policy, signature, accessid, host, dir, stsToken, imgUrl } = await response.json()
+
         const formData = new FormData()
         formData.append('success_action_status', '200') // 指定成功上传时，服务端返回状态码200，默认返回204。
         formData.append('policy', policy)
@@ -381,8 +381,6 @@ export default {
         formData.append('key', dir + fileName) // 文件名
         formData.append('file', this.uploadedFile) // file必须为最后一个表单域
 
-        console.log(imgUrl)
-
         this.uploadedFileUrl = imgUrl
 
         const param = {
@@ -390,9 +388,8 @@ export default {
           body: formData
         }
         fetch(host, param)
-          .then((data) => {
-            console.log(data)
-            this.$message.success('上传成功！')
+          .then(() => {
+            // console.log(data)
             this.updateConversationWithImageUrl(imgUrl)
             this.uploadedFile = null
             this.fileList = []
