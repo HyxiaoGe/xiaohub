@@ -13,8 +13,8 @@ const currentAssistantMessage = ref('')
 const imgUrl = ref('')
 
 onMounted(async () => {
-  webSocketService.initializeWebSocket('ws://localhost:8809/ws')
-  // webSocketService.initializeWebSocket(`ws://${process.env.VITE_APP_END_POINT}/image/ws`)
+  // webSocketService.initializeWebSocket('ws://localhost:8809/ws')
+  webSocketService.initializeWebSocket(`ws://${process.env.VITE_APP_END_POINT}/image/ws`)
   webSocketService.registerMessageHandler(handleWebSocketMessage)
   const sessionsFromStorage = sessionService.get('imageSessions')
   if (sessionsFromStorage) {
@@ -36,8 +36,6 @@ const generateImage = async () => {
     ElMessage.warn('请先验证密钥！')
     return
   }
-  // temp
-  conversation.value = []
   const trimmedMessage = userMessage.value.trim()
   if (trimmedMessage && webSocketService.getReadyState()) {
     conversation.value.push({
@@ -52,7 +50,6 @@ const generateImage = async () => {
         content: msg.text
       }))
     }
-    console.log(message)
     webSocketService.sendMessage(JSON.stringify(message))
   }
   userMessage.value = ''
@@ -67,10 +64,10 @@ const handleWebSocketMessage = (message) => {
       // 标记当前消息为完成
       markLastMessageAsDone()
       currentAssistantMessage.value = ''
+      imgUrl.value = ''
     } else {
       // 文本消息处理
       currentAssistantMessage.value += messageObj.content
-      console.log(currentAssistantMessage.value)
       updateConversation()
     }
   }
@@ -89,6 +86,7 @@ const updateConversation = () => {
       role: 'assistant',
       done: false
     })
+    imgUrl.value = ''
   }
   sessions.value = conversation.value
 }
@@ -100,6 +98,8 @@ const markLastMessageAsDone = () => {
 }
 
 const debouncedSave = debounce(() => {
+  // 防抖（Debounce）函数
+  // 防抖技术可以确保在一定时间内，无论发生多少次更新，只有最后一次操作后的一段时间才会触发函数执行。
   sessionService.save('imageSessions', conversation.value)
 }, 500)
 
