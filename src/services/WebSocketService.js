@@ -4,14 +4,26 @@ class WebSocketService {
     this.reconnectInterval = null
     this.reconnectAttempts = 0
     this.messageHandlers = new Set()
+    this.lastUrl = null
+    this.heartbeatInterval = null
   }
 
   initializeWebSocket(url) {
+    console.log('Initializing WebSocket connection to:', url)
+    this.lastUrl = url
     this.websocket = new WebSocket(url)
     this.websocket.onmessage = (event) => {
       this.notifyMessageHandlers(event.data)
+      const data = JSON.parse(event.data)
+      if (data.content === 'pong') {
+        console.log('Received pong from the server')
+      }
     }
-    this.websocket.onopen = this.handleWebSocketOpen.bind(this)
+    this.websocket.onopen = () => {
+      this.handleWebSocketOpen()
+      this.startHeartbeat()
+    }
+    // this.websocket.onopen = this.handleWebSocketOpen.bind(this)
     this.websocket.onerror = this.handleWebSocketError.bind(this)
     this.websocket.onclose = this.handleWebSocketClose.bind(this)
   }
@@ -53,14 +65,14 @@ class WebSocketService {
     const RECONNECT_INTERVAL_BASE = 1000
     const RECONNECT_INTERVAL_MAX = 30000
 
-    if (this.reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+    if (this.reconnectAttempts < MAX_RECONNECT_ATTEMPTS && this.lastUrl) {
       let reconnectDelay = Math.min(
         RECONNECT_INTERVAL_BASE * Math.pow(2, this.reconnectAttempts),
         RECONNECT_INTERVAL_MAX
       )
       setTimeout(() => {
         console.log(`Attempting to reconnect... (Attempt: ${this.reconnectAttempts + 1})`)
-        this.initializeWebSocket()
+        this.initializeWebSocket(this.lastUrl)
       }, reconnectDelay)
       this.reconnectAttempts++
     } else {
@@ -83,6 +95,14 @@ class WebSocketService {
 
   getReadyState() {
     return this.websocket ? this.websocket.readyState : WebSocket.CLOSED
+  }
+
+  startHeartbeat() {
+    this.heartbeatInterval = setInterval(() => {
+      if (this.websocket.readyState === WebSocket.OPEN) {
+        this.sendMessage('ping')
+      }
+    }, 15000)
   }
 }
 
