@@ -126,7 +126,7 @@ export default {
           imgUrl: null,
           done: true // 标记为完成
         })
-        //  对话上下文只支持最近5次对话(固定首Prompt)
+        //  对话上下文只支持最近5次对话(固定首Prompt) test
         const firstPrompt = this.conversation[0]
         const message = {
           sessionId: activeSession.id,
