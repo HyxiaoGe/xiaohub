@@ -1,3 +1,29 @@
+<script setup>
+import { defineEmits } from 'vue'
+
+const props = defineProps({
+  sessions: {
+    type: Array,
+    default: () => []
+  },
+  activeSessionId: Number
+})
+
+const emit = defineEmits(['set-active-session', 'add-new-session', 'delete-session'])
+
+const selectSession = (sessionId) => {
+  emit('set-active-session', sessionId)
+}
+const addSession = () => {
+  emit('add-new-session')
+}
+const deleteSession = (sessionId) => {
+  if (window.confirm('确定要删除这个会话吗？')) {
+    emit('delete-session', sessionId)
+  }
+}
+</script>
+
 <template>
   <div class="sidebar-container">
     <el-tooltip content="添加新会话" placement="top">
@@ -5,60 +31,35 @@
         icon="CirclePlusFilled"
         style="font-size: 24px"
         class="add-session"
-        @click="addSession"/>
+        @click="addSession"
+      />
     </el-tooltip>
     <el-menu
       class="el-menu"
-      :default-active=activeSessionId.toString()
+      :default-active="activeSessionId.toString()"
       background-color="#3b4a5a"
       text-color="#fff"
-      active-text-color="#4caf50">
+      active-text-color="#4caf50"
+    >
       <el-menu-item
         v-for="session in sessions"
-        :key=session.id
-        :index=session.id.toString()
+        :key="session.id"
+        :index="session.id.toString()"
         @click="selectSession(session.id)"
-        class="session-item">
-          {{ session.name }}
+        class="session-item"
+      >
+        {{ session.name }}
         <el-button
           v-if="session.id > 6"
           icon="Delete"
           class="delete-icon"
-          type="text"
           @click.stop="deleteSession(session.id)"
-          v-show="activeSessionId === session.id"/>
+          v-show="activeSessionId === session.id"
+        />
       </el-menu-item>
     </el-menu>
   </div>
 </template>
-
-<script>
-export default {
-  props: {
-    sessions: {
-      type: Array,
-      default: () => []
-    },
-    activeSessionId: Number
-  },
-  data() {
-    return {}
-  },
-  methods: {
-    selectSession(sessionId) {
-      this.$emit('set-active-session', sessionId)
-    },
-    addSession() {
-      this.$emit('add-new-session')
-    },
-    deleteSession(sessionId) {
-      if (window.confirm('确定要删除这个会话吗？')) {
-        this.$emit('delete-session', sessionId)
-      }
-    }
-  }
-}
-</script>
 
 <style scoped>
 .sidebar-container {
@@ -147,6 +148,8 @@ export default {
   margin-left: auto;
   transition: opacity 0.3s ease;
   background-color: transparent;
+  border: none;
+  color: #fff;
 }
 
 .delete-icon:hover {

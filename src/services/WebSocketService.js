@@ -9,7 +9,6 @@ class WebSocketService {
   }
 
   initializeWebSocket(url) {
-    console.log('Initializing WebSocket connection to:', url)
     this.lastUrl = url
     this.websocket = new WebSocket(url)
     this.websocket.onmessage = (event) => {

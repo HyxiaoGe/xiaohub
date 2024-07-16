@@ -28,9 +28,9 @@ class SessionService {
     }
   }
 
-  delete(id, sessions) {
+  delete(item, id, sessions) {
     sessions = sessions.filter((session) => session.id !== id)
-    this.save(sessions)
+    this.save(item, sessions)
   }
 }
 
