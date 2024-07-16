@@ -26,7 +26,7 @@
                 @click="navigate"
             /></el-tooltip>
           </router-link>
-          <router-link to="/video" custom v-slot="{ navigate }">
+          <!-- <router-link to="/video" custom v-slot="{ navigate }">
             <el-tooltip content="AI 音频" placement="top">
               <el-button
                 class="radio-button"
@@ -36,8 +36,8 @@
                 @click="navigate"
               />
             </el-tooltip>
-          </router-link>
-          <router-link to="/video" custom v-slot="{ navigate }">
+          </router-link> -->
+          <!-- <router-link to="/video" custom v-slot="{ navigate }">
             <el-tooltip content="AI 短视频" placement="top">
               <el-button
                 class="shortvideo-button"
@@ -47,10 +47,10 @@
                 @click="navigate"
               />
             </el-tooltip>
-          </router-link>
-        </div>
-        <div class="nav-buttons-analyze">
-          <router-link to="/video" custom v-slot="{ navigate }">
+          </router-link> -->
+          <!-- </div>
+        <div class="nav-buttons-analyze"> -->
+          <!-- <router-link to="/video" custom v-slot="{ navigate }">
             <el-tooltip content="AI 音乐" placement="top">
               <el-button
                 class="music-button"
@@ -71,7 +71,7 @@
                 @click="navigate"
               />
             </el-tooltip>
-          </router-link>
+          </router-link> -->
           <router-link to="/" custom v-slot="{ navigate }">
             <el-tooltip content="开发中..." placement="top">
               <el-button
