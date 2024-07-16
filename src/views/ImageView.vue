@@ -44,6 +44,11 @@ const generateImage = async () => {
       role: 'user',
       done: true
     })
+    conversation.value.push({
+      text: '正在生成图像，请稍候...',
+      role: 'assistant',
+      done: false
+    })
     const message = {
       action: 'session',
       conversation: conversation.value.map((msg) => ({
@@ -59,10 +64,9 @@ const handleWebSocketMessage = (message) => {
   const messageObj = JSON.parse(message)
   if (messageObj.type === 'image') {
     imgUrl.value = messageObj.content
-    // TODO 返回图片保存至阿里云OSS
+    updateConversationWithImage()
   } else if (messageObj.type === 'text') {
     if (messageObj.content === '[DONE]') {
-      // 标记当前消息为完成
       markLastMessageAsDone()
       currentAssistantMessage.value = ''
       imgUrl.value = ''
@@ -71,13 +75,24 @@ const handleWebSocketMessage = (message) => {
       currentAssistantMessage.value += messageObj.content
       updateConversation()
     }
+  } else if (messageObj.type === 'errMsg') {
+    ElMessage.error(messageObj.content)
+  }
+}
+
+const updateConversationWithImage = () => {
+  if (conversation.value.length > 0) {
+    conversation.value[conversation.value.length - 1].imageUrl = imgUrl.value
+    conversation.value[conversation.value.length - 1].done = true
+    imgUrl.value = ''
   }
 }
 
 const updateConversation = () => {
-  if (conversation.value.length > 0 && !conversation.value[conversation.value.length - 1].done) {
+  if (conversation.value.length > 0) {
     // 更新最后一条消息
-    conversation.value[conversation.value.length - 1].text = currentAssistantMessage.value
+    const assistantMessages = conversation.value.filter((msg) => msg.role === 'assistant')
+    assistantMessages[assistantMessages.length - 1].text = currentAssistantMessage.value
   } else {
     // 添加新的消息
     conversation.value.push({
@@ -124,6 +139,7 @@ const clearConversation = () => {
             :class="['icon', msg.role === 'user' ? 'fa-solid fa-user-tie' : 'fa-solid fa-robot']"
           ></i>
           <div
+            v-loading="isLoading"
             v-if="msg.text"
             :class="['icon', msg.role === 'user' ? 'user-text-content' : 'robot-text-content']"
             v-text="msg.text"
