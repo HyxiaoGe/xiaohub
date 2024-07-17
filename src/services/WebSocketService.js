@@ -6,6 +6,7 @@ class WebSocketService {
     this.messageHandlers = new Set()
     this.lastUrl = null
     this.heartbeatInterval = null
+    this.missedHeartbeats = 0
   }
 
   initializeWebSocket(url) {
@@ -16,13 +17,13 @@ class WebSocketService {
       const data = JSON.parse(event.data)
       if (data.content === 'pong') {
         console.log('Received pong from the server')
+        this.missedHeartbeats = 0 // 重置心跳检测计数
       }
     }
     this.websocket.onopen = () => {
       this.handleWebSocketOpen()
       this.startHeartbeat()
     }
-    // this.websocket.onopen = this.handleWebSocketOpen.bind(this)
     this.websocket.onerror = this.handleWebSocketError.bind(this)
     this.websocket.onclose = this.handleWebSocketClose.bind(this)
   }
@@ -54,6 +55,7 @@ class WebSocketService {
 
   handleWebSocketClose(event) {
     console.log('WebSocket is closed now:', event)
+    this.stopHeartbeat()
     if (!this.reconnectInterval) {
       this.reconnectWebSocket()
     }
@@ -88,6 +90,7 @@ class WebSocketService {
   }
   closeWebSocket() {
     if (this.websocket) {
+      console.log('Closing WebSocket connection...')
       this.websocket.close()
     }
   }
@@ -100,8 +103,19 @@ class WebSocketService {
     this.heartbeatInterval = setInterval(() => {
       if (this.websocket.readyState === WebSocket.OPEN) {
         this.sendMessage('ping')
+        this.missedHeartbeats++
+        if (this.missedHeartbeats > 3) {
+          console.warn('No pong received after 3 heartbeats, reconnecting...')
+          this.websocket.close()
+        }
       }
-    }, 15000)
+    }, 30000)
+  }
+
+  stopHeartbeat() {
+    clearInterval(this.heartbeatInterval)
+    this.heartbeatInterval = null
+    this.missedHeartbeats = 0
   }
 }
 
