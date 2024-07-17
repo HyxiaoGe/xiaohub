@@ -49,11 +49,17 @@ const generateImage = async () => {
       role: 'assistant',
       done: false
     })
+
+    let conversationContent = {}
+    if (conversation.value.length >= 2) {
+      const penultimateConversation = conversation.value[conversation.value.length - 2]
+      conversationContent = {
+        content: penultimateConversation.text
+      }
+    }
     const message = {
       action: 'session',
-      conversation: conversation.value.map((msg) => ({
-        content: msg.text
-      }))
+      conversation: conversationContent
     }
     webSocketService.sendMessage(JSON.stringify(message))
   }
@@ -139,7 +145,6 @@ const clearConversation = () => {
             :class="['icon', msg.role === 'user' ? 'fa-solid fa-user-tie' : 'fa-solid fa-robot']"
           ></i>
           <div
-            v-loading="isLoading"
             v-if="msg.text"
             :class="['icon', msg.role === 'user' ? 'user-text-content' : 'robot-text-content']"
             v-text="msg.text"

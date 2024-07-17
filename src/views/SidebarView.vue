@@ -1,6 +1,4 @@
 <script setup>
-import { defineEmits } from 'vue'
-
 const props = defineProps({
   sessions: {
     type: Array,

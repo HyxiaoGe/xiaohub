@@ -354,8 +354,7 @@ const handleFileUpload = (file, fileList) => {
   uploadedFile.value = file.raw
 }
 const uploadFile = () => {
-  const fileName = this.uploadedFile.name
-  console.log('file: ', this.uploadedFile)
+  const fileName = uploadedFile.value.name
   const tokenUrl = `http://${process.env.VITE_APP_END_POINT}/osstoken?filename=${fileName}`
   // const tokenUrl = 'http://127.0.0.1:3001/osstoken?filename=' + fileName
   fetch(tokenUrl).then(async (response) => {
@@ -495,4 +494,4 @@ const generateSessionId = () => {
   </div>
 </template>
 
-<style src="../styles/chat.css"></style>
+<style scoped src="../styles/chat.css"></style>
