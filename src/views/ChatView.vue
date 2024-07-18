@@ -237,8 +237,8 @@ const clearConversation = () => {
   if (confirm('确定要清空上下文吗？')) {
     conversation.value = conversation.value.slice(0, 1) // 清空聊天数组
     const activeSession = sessions.value.find((session) => session.id === activeSessionId.value)
-    if (activeSession.value) {
-      activeSession.messages.value = [...conversation.value]
+    if (activeSession) {
+      activeSession.messages = [...conversation.value]
       SessionService.save('chatSessions', sessions.value)
     }
   }
@@ -298,7 +298,7 @@ const updateConversation = (sessionId, data) => {
     }
     if (sessionId === activeSessionId.value) {
       // 由于数组中对象的属性发生了变化，确保更新视图
-      activeSession.messages.value = [...conversation.value]
+      activeSession.messages = [...conversation.value]
       SessionService.save('chatSessions', sessions.value)
       scrollToBottom()
     }
