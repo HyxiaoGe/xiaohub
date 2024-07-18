@@ -7,6 +7,9 @@ class WebSocketService {
     this.lastUrl = null
     this.heartbeatInterval = null
     this.missedHeartbeats = 0
+    this.userActivityTimeout = null
+    this.webSocketCloseTimeout = null
+    this.userInactive = false
   }
 
   initializeWebSocket(url) {
@@ -47,6 +50,7 @@ class WebSocketService {
       clearInterval(this.reconnectInterval)
       this.reconnectInterval = null
     }
+    this.startUserActivityMonitor()
   }
 
   handleWebSocketError(error) {
@@ -55,13 +59,18 @@ class WebSocketService {
 
   handleWebSocketClose(event) {
     console.log('WebSocket is closed now:', event)
+    this.websocket = null
     this.stopHeartbeat()
+    this.stopUserActivityMonitor()
     if (!this.reconnectInterval) {
       this.reconnectWebSocket()
     }
   }
 
   reconnectWebSocket() {
+    if (this.userInactive) {
+      return
+    }
     const MAX_RECONNECT_ATTEMPTS = 10
     const RECONNECT_INTERVAL_BASE = 1000
     const RECONNECT_INTERVAL_MAX = 30000
@@ -88,9 +97,9 @@ class WebSocketService {
       console.error('WebSocket is not open. Message not sent:', message)
     }
   }
+
   closeWebSocket() {
     if (this.websocket) {
-      console.log('Closing WebSocket connection...')
       this.websocket.close()
     }
   }
@@ -100,10 +109,12 @@ class WebSocketService {
   }
 
   startHeartbeat() {
+    this.stopHeartbeat()
     this.heartbeatInterval = setInterval(() => {
-      if (this.websocket.readyState === WebSocket.OPEN) {
+      if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
         this.sendMessage('ping')
         this.missedHeartbeats++
+        // console.log('Missed heartbeats:', this.missedHeartbeats)
         if (this.missedHeartbeats > 3) {
           console.warn('No pong received after 3 heartbeats, reconnecting...')
           this.websocket.close()
@@ -113,9 +124,56 @@ class WebSocketService {
   }
 
   stopHeartbeat() {
-    clearInterval(this.heartbeatInterval)
-    this.heartbeatInterval = null
-    this.missedHeartbeats = 0
+    if (this.heartbeatInterval) {
+      console.log('用户未活跃，停止心跳')
+      clearInterval(this.heartbeatInterval)
+      this.heartbeatInterval = null
+      this.missedHeartbeats = 0
+    }
+  }
+
+  startUserActivityMonitor() {
+    this.resetUserActivityTimeout()
+
+    const userActivityEvents = ['mousemove', 'keydown', 'scroll', 'click']
+
+    this.userActivityListener = () => {
+      if (this.websocket == null) {
+        this.reconnectWebSocket()
+      } else if (this.userInactive) {
+        this.userInactive = false
+        console.log('用户活跃，开始心跳')
+        this.startHeartbeat()
+      }
+      this.resetUserActivityTimeout()
+    }
+    userActivityEvents.forEach((event) => {
+      document.addEventListener(event, this.userActivityListener)
+    })
+  }
+
+  stopUserActivityMonitor() {
+    clearTimeout(this.userActivityTimeout)
+    clearTimeout(this.webSocketCloseTimeout)
+    const userActivityEvents = ['mousemove', 'keydown', 'scroll', 'click']
+    userActivityEvents.forEach((event) => {
+      document.removeEventListener(event, this.userActivityListener)
+    })
+  }
+
+  resetUserActivityTimeout() {
+    clearTimeout(this.userActivityTimeout)
+    clearTimeout(this.webSocketCloseTimeout)
+    this.userActivityTimeout = setTimeout(() => {
+      this.userInactive = true
+      this.stopHeartbeat()
+
+      this.webSocketCloseTimeout = setTimeout(() => {
+        if (this.userInactive && this.websocket != null) {
+          this.closeWebSocket()
+        }
+      }, 300000) // 10分钟用户不活跃关闭WebSocket
+    }, 300000) // 5分钟没有活跃行为视为用户不活跃
   }
 }
 

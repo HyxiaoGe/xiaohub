@@ -32,7 +32,7 @@ const messageQueues = ref({})
 const fileList = ref([])
 
 onBeforeMount(() => {
-  // webSocketService.initializeWebSocket('ws://localhost:8808/ws')
+  // WebSocketService.initializeWebSocket('ws://localhost:8808/ws')
   WebSocketService.initializeWebSocket(`ws://${process.env.VITE_APP_END_POINT}/chat/ws`)
   WebSocketService.registerMessageHandler(handleWebSocketMessage)
   isVerified.value = SessionService.get('isVerified') === 'true'
@@ -53,7 +53,7 @@ onBeforeUnmount(() => {
     messagesContainer.value.removeEventListener('scroll', onScroll)
   }
   WebSocketService.unregisterMessageHandler(handleWebSocketMessage)
-  WebSocketService.closeWebSocket()
+  // WebSocketService.closeWebSocket()
 })
 
 const loadSessionsFromLocalStorage = () => {
