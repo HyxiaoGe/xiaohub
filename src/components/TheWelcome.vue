@@ -26,17 +26,17 @@
                 @click="navigate"
             /></el-tooltip>
           </router-link>
-          <!-- <router-link to="/video" custom v-slot="{ navigate }">
-            <el-tooltip content="AI 音频" placement="top">
+          <router-link to="/insight" custom v-slot="{ navigate }">
+            <el-tooltip content="AI 面板" placement="top">
               <el-button
                 class="radio-button"
                 type="primary"
-                icon="Microphone"
+                icon="Platform"
                 style="font-size: 24px"
                 @click="navigate"
               />
             </el-tooltip>
-          </router-link> -->
+          </router-link>
           <!-- <router-link to="/video" custom v-slot="{ navigate }">
             <el-tooltip content="AI 短视频" placement="top">
               <el-button

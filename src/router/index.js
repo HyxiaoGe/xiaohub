@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import Chat from '../views/ChatView.vue'
 import Image from '../views/ImageView.vue'
-import Video from '../views/VideoView.vue'
+import Insight from '../views/InsightPage/InsightPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,9 +23,9 @@ const router = createRouter({
       component: Image
     },
     {
-      path: '/video',
-      name: 'video',
-      component: Video
+      path: '/insight',
+      name: 'insight',
+      component: Insight
     },
     {
       path: '/about',

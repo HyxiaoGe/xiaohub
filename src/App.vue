@@ -5,7 +5,8 @@
     <router-link to="/"></router-link>
     <router-link to="/chat"></router-link>
     <router-link to="/image"></router-link>
-    <router-link to="/video"></router-link>
+    <router-link to="/insight"></router-link>
+    <!-- <router-link to="/video"></router-link> -->
     <router-link to="/about"></router-link>
   </div>
   <router-view />
