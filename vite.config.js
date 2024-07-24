@@ -18,5 +18,15 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+
+  server: {
+    proxy: {
+      '/insight': {
+        target: 'http://localhost:8810',
+        changeOrigin: true
+        // rewrite: (path) => path.replace(/^\/insight/, '')
+      }
+    }
   }
 })
