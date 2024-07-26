@@ -22,7 +22,7 @@ export default defineConfig({
 
   server: {
     proxy: {
-      '/insight': {
+      '/api': {
         target: 'http://localhost:8810',
         changeOrigin: true
         // rewrite: (path) => path.replace(/^\/insight/, '')

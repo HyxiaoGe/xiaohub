@@ -1,44 +1,65 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import BarrageFlow from './BarrageFlow.vue'
-import BannerPost from './BannerPost.vue'
 import AINew from './AINew.vue'
-// import AIHot from './AIHot.vue'
+import CategoryNav from './CategoryNav.vue'
 import SearchBar from './SearchBar.vue'
 import InsightService from '@/services/InsightService'
 
 const insightData = ref({
   barrageFlowData: null,
-  bannerPostData: null,
   aiNewData: null,
-  aiHotData: null
+  categoryNavData: null
 })
 
-const fetchInsightData = async () => {
-  const cacheKey = 'insightData'
+const fetchAINewData = async () => {
+  const cacheKey = 'AINewData'
   const cachedData = localStorage.getItem(cacheKey)
   if (cachedData) {
     const parseData = JSON.parse(cachedData)
-    insightData.value = { ...parseData }
-    console.log('Insight data loaded from cache:')
+    insightData.value.aiNewData = { ...parseData }
   } else {
-    console.log('fetchInsightData called')
     try {
-      const response = await InsightService.getInsightData()
-      const articles = response.data
-      insightData.value.barrageFlowData = articles.map((it) => it.title)
-      insightData.value.aiHotData = articles
-      insightData.value.aiNewData = articles
-      localStorage.setItem(cacheKey, JSON.stringify(insightData.value))
-      console.log('Insight data:', response.data)
+      const response = await InsightService.get36KrAIData()
+      insightData.value.barrageFlowData = response.data.map((it) => it.title)
+      const aggregatedData = {
+        KR_36_AINews: response.data
+      }
+      insightData.value.aiNewData = aggregatedData
+      localStorage.setItem(cacheKey, JSON.stringify(insightData.value.aiNewData))
     } catch (error) {
       console.error('Error fetching insight data:', error)
     }
   }
 }
 
-onMounted(() => {
-  fetchInsightData()
+const fetchCategoryNavData = async () => {
+  const cacheKey = 'CategoryNavData'
+  const cachedData = localStorage.getItem(cacheKey)
+  if (cachedData) {
+    const parseData = JSON.parse(cachedData)
+    insightData.value.categoryNavData = { ...parseData }
+  } else {
+    try {
+      const x_response = await InsightService.getChaPingData()
+      const ali_response = await InsightService.getAliResearchData()
+      x_response.data.forEach((item) => (item.source = 'X'))
+      ali_response.data.forEach((item) => (item.source = 'ali'))
+      const aggregatedData = {
+        Facts: x_response.data,
+        Technology: ali_response.data
+      }
+      insightData.value.categoryNavData = aggregatedData
+      localStorage.setItem(cacheKey, JSON.stringify(insightData.value.categoryNavData))
+    } catch (error) {
+      console.error('Error fetching category nav data:', error)
+    }
+  }
+}
+
+onMounted(async () => {
+  fetchAINewData()
+  await fetchCategoryNavData()
 })
 </script>
 
@@ -49,18 +70,21 @@ onMounted(() => {
       v-if="insightData.barrageFlowData"
       :data="insightData.barrageFlowData"
     />
+    <SearchBar class="search-bar" />
     <div class="main-content">
-      <BannerPost class="banner-post" />
+      <CategoryNav
+        class="category"
+        v-if="insightData.categoryNavData"
+        :data="insightData.categoryNavData"
+      />
       <div class="side-content">
         <AINew class="ai-new" v-if="insightData.aiNewData" :data="insightData.aiNewData" />
-        <!-- <AIHot class="ai-hot" :data="insightData.aiHotData" /> -->
       </div>
     </div>
-    <SearchBar class="search-bar" />
   </div>
 </template>
 
-<style>
+<style scoped>
 .insight-page {
   display: flex;
   flex-direction: column;
@@ -74,6 +98,14 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
+.search-bar {
+  width: 30%;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  margin-right: 400px;
+}
+
 .main-content {
   display: flex;
   justify-content: space-between;
@@ -81,9 +113,12 @@ onMounted(() => {
   margin-top: 20px;
 }
 
-.banner-post {
+.category {
   flex: 3;
   margin-right: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .side-content {
@@ -92,16 +127,7 @@ onMounted(() => {
   flex: 1;
 }
 
-.ai-hot,
 .ai-new {
-  margin-bottom: 20px;
   flex: 1;
-}
-
-.search-bar {
-  width: 80%;
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
 }
 </style>

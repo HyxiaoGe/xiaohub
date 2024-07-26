@@ -11,7 +11,7 @@ import { ref } from 'vue'
 const query = ref('')
 </script>
 
-<style>
+<style scoped>
 .search-bar {
   margin-top: 20px;
   display: flex;
@@ -21,6 +21,7 @@ const query = ref('')
   padding: 5px;
 }
 .search-bar button {
+  margin-left: 5px;
   padding: 5px 10px;
 }
 </style>

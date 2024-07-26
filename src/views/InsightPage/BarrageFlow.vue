@@ -52,7 +52,7 @@ watch(
 )
 </script>
 
-<style>
+<style scoped>
 .barrage-flow {
   width: 100%;
   height: 30px; /* 只显示一行 */
