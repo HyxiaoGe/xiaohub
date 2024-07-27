@@ -23,7 +23,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8810',
+        // target: 'http://localhost:8810',
+        target: process.env.VITE_APP_HTTP_END_POINT,
         changeOrigin: true
         // rewrite: (path) => path.replace(/^\/insight/, '')
       }
