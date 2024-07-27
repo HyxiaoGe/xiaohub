@@ -47,7 +47,13 @@ const fetchCategoryNavData = async () => {
       ali_response.data.forEach((item) => (item.source = 'ali'))
       const aggregatedData = {
         Facts: x_response.data,
-        Technology: ali_response.data
+        Technology: ali_response.data,
+        AI: '',
+        Finance: '',
+        News: '',
+        Life: '',
+        Youtube: '',
+        X: ''
       }
       insightData.value.categoryNavData = aggregatedData
       localStorage.setItem(cacheKey, JSON.stringify(insightData.value.categoryNavData))

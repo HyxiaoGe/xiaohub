@@ -1,9 +1,9 @@
 import axios from 'axios'
 
-const baseURL = process.env.NODE_ENV === 'production' ? 'https://your-api-domain/api' : '/api'
+const baseURL = process.env.NODE_ENV === 'production' ? process.env.VITE_APP_HTTP_END_POINT : ''
 
 const client = axios.create({
-  baseURL,
+  base: baseURL + '/api',
   headers: {
     'Content-Type': 'application/json'
   }
