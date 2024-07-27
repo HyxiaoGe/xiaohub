@@ -24,7 +24,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         // target: 'http://localhost:8810',
-        target: process.env.VITE_APP_HTTP_END_POINT,
+        target: 'http://chat.xiaohub.cn',
         changeOrigin: true
         // rewrite: (path) => path.replace(/^\/insight/, '')
       }
