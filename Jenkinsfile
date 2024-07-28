@@ -32,14 +32,14 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing NPM dependencies...'
-                sh script: 'npm ci', returnStdout: true
+                sh 'npm install'
             }
         }
         stage('Build') {
             steps {
                 echo 'Building the application...'
                 withEnv(['NODE_ENV=production']) {
-                    sh script: 'npm run build', returnStdout: true
+                    sh 'npm run build'
                 }
             }
         }
@@ -50,7 +50,6 @@ pipeline {
                 sh 'cp -r dist/* /docker/nginx/data/html/xiaohub/'
                 sh 'docker restart nginx'
                 echo 'Deployment completed successfully.'
-
             }
         }
     }
