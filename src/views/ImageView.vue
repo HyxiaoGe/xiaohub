@@ -13,7 +13,7 @@ const currentAssistantMessage = ref('')
 const imgUrl = ref('')
 
 onMounted(async () => {
-  // webSocketService.initializeWebSocket('ws://localhost:8809/ws' )
+  // webSocketService.initializeWebSocket('ws://localhost:8809/ws'   )
   webSocketService.initializeWebSocket(`${process.env.VITE_APP_WEBSOCKET_END_POINT}/image/ws`)
   webSocketService.registerMessageHandler(handleWebSocketMessage)
   const sessionsFromStorage = sessionService.get('imageSessions')
