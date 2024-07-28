@@ -25,7 +25,6 @@ pipeline {
                     // 创建.env 文件，注意使用双引号
                     writeFile file: '.env', text: """
                     VITE_APP_END_POINT=${env.END_POINT}
-                    NODE_ENV=production
                     VITE_APP_WEBSOCKET_END_POINT=ws://${env.END_POINT}
                     VITE_APP_HTTP_END_POINT=http://${env.END_POINT}
                     """
