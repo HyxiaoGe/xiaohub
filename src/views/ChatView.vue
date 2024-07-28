@@ -32,7 +32,7 @@ const messageQueues = ref({})
 const fileList = ref([])
 
 onBeforeMount(() => {
-  // WebSocketService.initializeWebSocket('ws://localhost:8808/ws')
+  // WebSocketService.initializeWebSocket('ws://localhost:8808/ws' )
   WebSocketService.initializeWebSocket(`${process.env.VITE_APP_WEBSOCKET_END_POINT}/chat/ws`)
   WebSocketService.registerMessageHandler(handleWebSocketMessage)
   isVerified.value = SessionService.get('isVerified') === 'true'
