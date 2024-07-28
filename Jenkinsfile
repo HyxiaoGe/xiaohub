@@ -41,7 +41,9 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the application...'
-                sh 'npm run build'
+                withEnv(['NODE_ENV=production']) {
+                    sh 'npm run build'
+                }
             }
         }
         stage('Deployment') {
