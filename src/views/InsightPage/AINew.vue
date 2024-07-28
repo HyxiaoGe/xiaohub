@@ -48,9 +48,19 @@ const handleCurrentChange = (page) => {
 <style scoped>
 .ai-new {
   border: 1px solid #ccc;
-  padding: 10px;
+  padding: 10px 10px 70px 10px;
   margin-top: 20px;
   font-family: 'Arial', sans-serif;
+  position: relative;
+  min-height: 500px;
+}
+
+.el-pagination {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  text-align: center;
 }
 
 h2 {
