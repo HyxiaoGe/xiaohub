@@ -3,6 +3,9 @@ pipeline {
     tools{
         git 'Server Git'
     }
+    options {
+        timestamps()
+    }
     stages {
         stage('Checkout') {
             steps {
