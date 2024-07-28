@@ -2,6 +2,8 @@ import axios from 'axios'
 
 const baseURL = process.env.NODE_ENV === 'production' ? process.env.VITE_APP_HTTP_END_POINT : ''
 
+console.log('baseUrl', baseURL)
+
 const client = axios.create({
   base: baseURL + '/api',
   headers: {
