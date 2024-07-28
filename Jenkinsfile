@@ -3,6 +3,9 @@ pipeline {
     tools{
         git 'Server Git'
     }
+    options {
+        timestamps()
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -32,14 +35,14 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing NPM dependencies...'
-                sh 'npm ci'
+                sh script: 'npm ci', returnStdout: true
             }
         }
         stage('Build') {
             steps {
                 echo 'Building the application...'
                 withEnv(['NODE_ENV=production']) {
-                    sh 'npm run build'
+                    sh script: 'npm run build', returnStdout: true
                 }
             }
         }
@@ -49,6 +52,8 @@ pipeline {
                 sh 'rm -rf /docker/nginx/data/html/xiaohub/*'
                 sh 'cp -r dist/* /docker/nginx/data/html/xiaohub/'
                 sh 'docker restart nginx'
+                echo 'Deployment completed successfully.'
+
             }
         }
     }
@@ -58,6 +63,10 @@ pipeline {
         }
         failure {
             echo 'Build failed!'
+            echo 'Checking for errors...'
+            script {
+                sh 'cat /var/log/jenkins/jenkins.log'
+            }
         }
     }
 }
