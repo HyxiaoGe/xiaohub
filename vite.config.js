@@ -26,7 +26,6 @@ export default defineConfig({
         // target: 'http://localhost:8810',
         target: 'http://chat.xiaohub.cn',
         changeOrigin: true
-        // rewrite: (path) => path.replace(/^\/insight/, '')
       }
     }
   }

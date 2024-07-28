@@ -2,18 +2,12 @@ import axios from 'axios'
 
 const baseURL = process.env.NODE_ENV === 'production' ? process.env.VITE_APP_HTTP_END_POINT : ''
 
-console.log('baseUrl: ', baseURL)
-console.log('process.env.NODE_ENV: ', process.env.NODE_ENV)
-console.log('process.env.VITE_APP_HTTP_END_POINT: ', process.env.VITE_APP_HTTP_END_POINT)
-
 const client = axios.create({
   baseURL: baseURL + '/api',
   headers: {
     'Content-Type': 'application/json'
   }
 })
-
-console.log('baseUrl', baseURL)
 
 export default {
   get36KrAIData() {
