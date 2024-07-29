@@ -63,9 +63,9 @@ pipeline {
         failure {
             echo 'Build failed!'
             echo 'Checking for errors...'
-            script {
-                sh 'cat /var/log/jenkins/jenkins.log'
-            }
+            // script {
+            //     sh 'cat /var/log/jenkins/jenkins.log'
+            // }
         }
     }
 }
