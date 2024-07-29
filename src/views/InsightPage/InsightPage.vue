@@ -5,6 +5,7 @@ import AINew from './AINew.vue'
 import CategoryNav from './CategoryNav.vue'
 import SearchBar from './SearchBar.vue'
 import InsightService from '@/services/InsightService'
+import webSocketService from '@/services/WebSocketService'
 
 const insightData = ref({
   barrageFlowData: null,
@@ -12,9 +13,11 @@ const insightData = ref({
   categoryNavData: null
 })
 
+const AINewCacheKey = ref('AINewData')
+const CategoryNavCacheKey = ref('CategoryNavData')
+
 const fetchAINewData = async () => {
-  const cacheKey = 'AINewData'
-  const cachedData = localStorage.getItem(cacheKey)
+  const cachedData = localStorage.getItem(AINewCacheKey)
   if (cachedData) {
     const parseData = JSON.parse(cachedData)
     insightData.value.aiNewData = { ...parseData }
@@ -26,7 +29,7 @@ const fetchAINewData = async () => {
         KR_36_AINews: response.data
       }
       insightData.value.aiNewData = aggregatedData
-      localStorage.setItem(cacheKey, JSON.stringify(insightData.value.aiNewData))
+      localStorage.setItem(AINewCacheKey, JSON.stringify(insightData.value.aiNewData))
     } catch (error) {
       console.error('Error fetching insight data:', error)
     }
@@ -34,19 +37,18 @@ const fetchAINewData = async () => {
 }
 
 const fetchCategoryNavData = async () => {
-  const cacheKey = 'CategoryNavData'
-  const cachedData = localStorage.getItem(cacheKey)
+  const cachedData = localStorage.getItem(CategoryNavCacheKey)
   if (cachedData) {
     const parseData = JSON.parse(cachedData)
     insightData.value.categoryNavData = { ...parseData }
   } else {
     try {
-      const x_response = await InsightService.getChaPingData()
+      const xpin_response = await InsightService.getChaPingData()
       const ali_response = await InsightService.getAliResearchData()
-      x_response.data.forEach((item) => (item.source = 'X'))
+      xpin_response.data.forEach((item) => (item.source = 'X'))
       ali_response.data.forEach((item) => (item.source = 'ali'))
       const aggregatedData = {
-        Facts: x_response.data,
+        Facts: xpin_response.data,
         Technology: ali_response.data,
         AI: '',
         Finance: '',
@@ -56,9 +58,23 @@ const fetchCategoryNavData = async () => {
         X: ''
       }
       insightData.value.categoryNavData = aggregatedData
-      localStorage.setItem(cacheKey, JSON.stringify(insightData.value.categoryNavData))
+      localStorage.setItem(CategoryNavCacheKey, JSON.stringify(insightData.value.categoryNavData))
     } catch (error) {
       console.error('Error fetching category nav data:', error)
+    }
+  }
+}
+
+const handleWebSocketMessage = (message) => {
+  if (message) {
+    const messageObj = JSON.parse(message)
+    if (messageObj.type === 'update') {
+      const platform = messageObj.content
+      if (platform === '36kr') {
+        localStorage.removeItem(AINewCacheKey)
+      } else if (platform === 'chaping' || platform === 'aliresearch') {
+        localStorage.removeItem(CategoryNavCacheKey)
+      }
     }
   }
 }
@@ -66,6 +82,9 @@ const fetchCategoryNavData = async () => {
 onMounted(async () => {
   fetchAINewData()
   await fetchCategoryNavData()
+  // webSocketService.initializeWebSocket('ws://localhost:8810/ws')
+  webSocketService.initializeWebSocket(`${process.env.VITE_APP_WEBSOCKET_END_POINT}/insight/ws`)
+  webSocketService.registerMessageHandler(handleWebSocketMessage)
 })
 </script>
 
