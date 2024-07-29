@@ -24,7 +24,7 @@ const fetchAINewData = async () => {
   } else {
     try {
       const response = await InsightService.get36KrAIData()
-      insightData.value.barrageFlowData = response.data.map((it) => it.title)
+      // insightData.value.barrageFlowData = response.data.map((it) => it.title)
       const aggregatedData = {
         KR_36_AINews: response.data
       }
@@ -66,25 +66,33 @@ const fetchCategoryNavData = async () => {
 }
 
 const handleWebSocketMessage = (message) => {
-  if (message) {
-    const messageObj = JSON.parse(message)
-    if (messageObj.type === 'update') {
-      const platform = messageObj.content
-      if (platform === '36kr') {
-        localStorage.removeItem(AINewCacheKey)
-      } else if (platform === 'chaping' || platform === 'aliresearch') {
-        localStorage.removeItem(CategoryNavCacheKey)
+  try {
+    if (message) {
+      const messageObj = JSON.parse(message)
+      if (messageObj.type === 'update') {
+        const platform = messageObj.content
+        if (platform === '36kr') {
+          localStorage.removeItem(AINewCacheKey)
+        } else if (platform === 'chaping' || platform === 'aliresearch') {
+          localStorage.removeItem(CategoryNavCacheKey)
+        }
       }
     }
+  } catch (error) {
+    console.error('Error parsing WebSocket message:', error)
   }
 }
 
 onMounted(async () => {
-  fetchAINewData()
-  await fetchCategoryNavData()
-  // webSocketService.initializeWebSocket('ws://localhost:8810/ws')
-  webSocketService.initializeWebSocket(`${process.env.VITE_APP_WEBSOCKET_END_POINT}/insight/ws`)
-  webSocketService.registerMessageHandler(handleWebSocketMessage)
+  try {
+    await fetchAINewData()
+    await fetchCategoryNavData()
+    // webSocketService.initializeWebSocket('ws://localhost:8810/ws')
+    webSocketService.initializeWebSocket(`${process.env.VITE_APP_WEBSOCKET_END_POINT}/insight/ws`)
+    webSocketService.registerMessageHandler(handleWebSocketMessage)
+  } catch (error) {
+    console.error('Error during component initialization:', error)
+  }
 })
 </script>
 
