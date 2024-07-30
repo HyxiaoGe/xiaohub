@@ -13,10 +13,8 @@ const activeName = ref('Facts')
 const tabNames = {
   Facts: '快讯',
   Technology: '科技',
-  AI: 'AI',
-  Finance: '金融',
-  News: '新闻',
   Life: '生活',
+  AI: 'AI',
   Youtube: 'Youtube',
   X: 'X (原Twitter)'
 }
@@ -66,5 +64,28 @@ const tabNames = {
 .el-tab-pane {
   padding: 10px;
   height: calc(75vh - 50px);
+}
+
+/** */
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  margin-bottom: 3px;
+}
+
+li:last-child {
+  margin-bottom: 0;
+}
+
+a {
+  color: #0645ad;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 </style>

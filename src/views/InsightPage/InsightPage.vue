@@ -5,13 +5,14 @@ import AINew from './AINew.vue'
 import CategoryNav from './CategoryNav.vue'
 // import SearchBar from './SearchBar.vue'
 import InsightService from '@/services/InsightService'
-// import webSocketService from '@/services/WebSocketService'
 
 const insightData = ref({
   barrageFlowData: null,
   aiNewData: null,
   categoryNavData: null
 })
+
+const platforms = ref(['zaobao', 'chlinlearn', 'oeeee', 'deeplearning'])
 
 const timer = ref(null)
 
@@ -38,28 +39,30 @@ const fetchAINewData = async () => {
 const fetchCategoryNavData = async () => {
   const cachedCategoryData = localStorage.getItem('CategoryNavData')
   if (cachedCategoryData) {
-    const parseCategoryNavData = JSON.parse(cachedCategoryData)
-    insightData.value.categoryNavData = { ...parseCategoryNavData }
+    insightData.value.categoryNavData = JSON.parse(cachedCategoryData)
   } else {
     try {
-      const xpin_response = await InsightService.getPlatformData('chaping')
-      const ali_response = await InsightService.getPlatformData('aliresearch')
-      xpin_response.data.forEach((item) => (item.source = 'X'))
-      ali_response.data.forEach((item) => (item.source = 'ali'))
-      const data = []
-      data.push({ title: '暂无内容' })
+      const responses = await Promise.all(
+        platforms.value.map((platform) => InsightService.getPlatformData(platform))
+      )
+
+      const defaultData = { title: '暂无内容' }
       const aggregatedData = {
-        Facts: xpin_response.data,
-        Technology: ali_response.data,
-        AI: data,
-        Finance: data,
-        News: data,
-        Life: data,
-        Youtube: data,
-        X: data
+        Facts: responses[0].data,
+        Technology: responses[1].data,
+        Life: responses[2].data,
+        AI: responses[3].data,
+        Youtube: [defaultData],
+        X: [defaultData]
       }
+
+      responses.forEach((response, index) => {
+        response.data.forEach((item) => {
+          item.source = platforms[index]
+        })
+      })
       insightData.value.categoryNavData = aggregatedData
-      localStorage.setItem('CategoryNavData', JSON.stringify(insightData.value.categoryNavData))
+      localStorage.setItem('CategoryNavData', JSON.stringify(aggregatedData))
     } catch (error) {
       console.error('Error fetching category nav data:', error)
     }
@@ -75,7 +78,7 @@ const checkForNewData = async () => {
         shouldReset = true
         if (platform === '36kr') {
           localStorage.removeItem('AINewData')
-        } else if (platform === 'chaping' || platform === 'aliresearch') {
+        } else if (platforms.value.includes(platform)) {
           localStorage.removeItem('CategoryNavData')
         }
       }
@@ -86,32 +89,9 @@ const checkForNewData = async () => {
   }
 }
 
-// const handleWebSocketMessage = (message) => {
-//   try {
-//     if (message) {
-//       const messageObj = JSON.parse(message)
-//       if (messageObj.type === 'update') {
-//         console.log('received message')
-//         const platform = messageObj.content
-//         if (platform === '36kr') {
-//           localStorage.removeItem('AINewData')
-//         } else if (platform === 'chaping' || platform === 'aliresearch') {
-//           localStorage.removeItem('CategoryNavData')
-//         }
-//       }
-//     }
-//   } catch (error) {
-//     console.error('Error parsing WebSocket message:', error)
-//   }
-// }
-
 onMounted(async () => {
   try {
-    await fetchAINewData()
-    await fetchCategoryNavData()
-    // webSocketService.initializeWebSocket('ws://localhost:8810/ws')
-    // webSocketService.initializeWebSocket(`${process.env.VITE_APP_WEBSOCKET_END_POINT}/insight/ws`)
-    // webSocketService.registerMessageHandler(handleWebSocketMessage)
+    await Promise.all([fetchAINewData(), fetchCategoryNavData()])
     timer.value = setInterval(checkForNewData, 3600000)
   } catch (error) {
     console.error('Error during component initialization:', error)
