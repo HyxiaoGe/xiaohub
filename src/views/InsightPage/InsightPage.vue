@@ -1,17 +1,19 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import BarrageFlow from './BarrageFlow.vue'
 import AINew from './AINew.vue'
 import CategoryNav from './CategoryNav.vue'
 // import SearchBar from './SearchBar.vue'
 import InsightService from '@/services/InsightService'
-import webSocketService from '@/services/WebSocketService'
+// import webSocketService from '@/services/WebSocketService'
 
 const insightData = ref({
   barrageFlowData: null,
   aiNewData: null,
   categoryNavData: null
 })
+
+const timer = ref(null)
 
 const fetchAINewData = async () => {
   const cachedAINewData = localStorage.getItem('AINewData')
@@ -20,7 +22,7 @@ const fetchAINewData = async () => {
     insightData.value.aiNewData = { ...parseAINewData }
   } else {
     try {
-      const response = await InsightService.get36KrAIData()
+      const response = await InsightService.getPlatformData('36kr')
       // insightData.value.barrageFlowData = response.data.map((it) => it.title)
       const aggregatedData = {
         KR_36_AINews: response.data
@@ -40,8 +42,8 @@ const fetchCategoryNavData = async () => {
     insightData.value.categoryNavData = { ...parseCategoryNavData }
   } else {
     try {
-      const xpin_response = await InsightService.getChaPingData()
-      const ali_response = await InsightService.getAliResearchData()
+      const xpin_response = await InsightService.getPlatformData('chaping')
+      const ali_response = await InsightService.getPlatformData('aliresearch')
       xpin_response.data.forEach((item) => (item.source = 'X'))
       ali_response.data.forEach((item) => (item.source = 'ali'))
       const data = []
@@ -56,7 +58,6 @@ const fetchCategoryNavData = async () => {
         Youtube: data,
         X: data
       }
-      console.log(aggregatedData)
       insightData.value.categoryNavData = aggregatedData
       localStorage.setItem('CategoryNavData', JSON.stringify(insightData.value.categoryNavData))
     } catch (error) {
@@ -65,34 +66,61 @@ const fetchCategoryNavData = async () => {
   }
 }
 
-const handleWebSocketMessage = (message) => {
-  try {
-    if (message) {
-      const messageObj = JSON.parse(message)
-      if (messageObj.type === 'update') {
-        console.log('received message')
-        const platform = messageObj.content
+const checkForNewData = async () => {
+  const updates = await InsightService.fetchAndUpdateStatus()
+  let shouldReset = false
+  if (updates) {
+    Object.keys(updates).forEach((platform) => {
+      if (updates[platform]) {
+        shouldReset = true
         if (platform === '36kr') {
           localStorage.removeItem('AINewData')
         } else if (platform === 'chaping' || platform === 'aliresearch') {
           localStorage.removeItem('CategoryNavData')
         }
       }
+    })
+    if (shouldReset) {
+      await InsightService.fetchAndUpdateStatus(true)
     }
-  } catch (error) {
-    console.error('Error parsing WebSocket message:', error)
   }
 }
+
+// const handleWebSocketMessage = (message) => {
+//   try {
+//     if (message) {
+//       const messageObj = JSON.parse(message)
+//       if (messageObj.type === 'update') {
+//         console.log('received message')
+//         const platform = messageObj.content
+//         if (platform === '36kr') {
+//           localStorage.removeItem('AINewData')
+//         } else if (platform === 'chaping' || platform === 'aliresearch') {
+//           localStorage.removeItem('CategoryNavData')
+//         }
+//       }
+//     }
+//   } catch (error) {
+//     console.error('Error parsing WebSocket message:', error)
+//   }
+// }
 
 onMounted(async () => {
   try {
     await fetchAINewData()
     await fetchCategoryNavData()
     // webSocketService.initializeWebSocket('ws://localhost:8810/ws')
-    webSocketService.initializeWebSocket(`${process.env.VITE_APP_WEBSOCKET_END_POINT}/insight/ws`)
-    webSocketService.registerMessageHandler(handleWebSocketMessage)
+    // webSocketService.initializeWebSocket(`${process.env.VITE_APP_WEBSOCKET_END_POINT}/insight/ws`)
+    // webSocketService.registerMessageHandler(handleWebSocketMessage)
+    timer.value = setInterval(checkForNewData, 3600000)
   } catch (error) {
     console.error('Error during component initialization:', error)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (timer.value) {
+    clearInterval(timer.value)
   }
 })
 </script>

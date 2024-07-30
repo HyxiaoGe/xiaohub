@@ -10,19 +10,11 @@ const client = axios.create({
 })
 
 export default {
-  get36KrAIData() {
-    return client.get('/insight/36kr')
+  getPlatformData(platform) {
+    return client.get(`/insight?platform=${platform}`)
   },
-  getChaPingData() {
-    return client.get('/insight/chaping')
-  },
-  getAliResearchData() {
-    return client.get('/insight/aliresearch')
-  },
-  getInsightDataByDate(date) {
-    return client.get(`/data?date=${date}`)
-  },
-  getInsightDataByDateRange(startDate, endDate) {
-    return client.get(`/data?startDate=${startDate}&endDate=${endDate}`)
+  fetchAndUpdateStatus(reset = false) {
+    const url = reset ? '/insight/updates-status?reset=true' : '/insight/updates-status'
+    return client.get(url)
   }
 }
