@@ -30,7 +30,8 @@ watch(
   { deep: true }
 )
 
-const isVerified = sessionService.get('isVerified') === 'true'
+// const isVerified = sessionService.get('isVerified') === 'true'
+const isVerified = 'true'
 const generateImage = async () => {
   if (!isVerified) {
     ElMessage.warn('请先验证密钥！')

@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import BarrageFlow from './BarrageFlow.vue'
 import AINew from './AINew.vue'
 import CategoryNav from './CategoryNav.vue'
-import SearchBar from './SearchBar.vue'
+// import SearchBar from './SearchBar.vue'
 import InsightService from '@/services/InsightService'
 import webSocketService from '@/services/WebSocketService'
 
@@ -13,14 +13,11 @@ const insightData = ref({
   categoryNavData: null
 })
 
-const AINewCacheKey = ref('AINewData')
-const CategoryNavCacheKey = ref('CategoryNavData')
-
 const fetchAINewData = async () => {
-  const cachedData = localStorage.getItem(AINewCacheKey)
-  if (cachedData) {
-    const parseData = JSON.parse(cachedData)
-    insightData.value.aiNewData = { ...parseData }
+  const cachedAINewData = localStorage.getItem('AINewData')
+  if (cachedAINewData) {
+    const parseAINewData = JSON.parse(cachedAINewData)
+    insightData.value.aiNewData = { ...parseAINewData }
   } else {
     try {
       const response = await InsightService.get36KrAIData()
@@ -29,7 +26,7 @@ const fetchAINewData = async () => {
         KR_36_AINews: response.data
       }
       insightData.value.aiNewData = aggregatedData
-      localStorage.setItem(AINewCacheKey, JSON.stringify(insightData.value.aiNewData))
+      localStorage.setItem('AINewData', JSON.stringify(insightData.value.aiNewData))
     } catch (error) {
       console.error('Error fetching insight data:', error)
     }
@@ -37,28 +34,31 @@ const fetchAINewData = async () => {
 }
 
 const fetchCategoryNavData = async () => {
-  const cachedData = localStorage.getItem(CategoryNavCacheKey)
-  if (cachedData) {
-    const parseData = JSON.parse(cachedData)
-    insightData.value.categoryNavData = { ...parseData }
+  const cachedCategoryData = localStorage.getItem('CategoryNavData')
+  if (cachedCategoryData) {
+    const parseCategoryNavData = JSON.parse(cachedCategoryData)
+    insightData.value.categoryNavData = { ...parseCategoryNavData }
   } else {
     try {
       const xpin_response = await InsightService.getChaPingData()
       const ali_response = await InsightService.getAliResearchData()
       xpin_response.data.forEach((item) => (item.source = 'X'))
       ali_response.data.forEach((item) => (item.source = 'ali'))
+      const data = []
+      data.push({ title: '暂无内容' })
       const aggregatedData = {
         Facts: xpin_response.data,
         Technology: ali_response.data,
-        AI: '',
-        Finance: '',
-        News: '',
-        Life: '',
-        Youtube: '',
-        X: ''
+        AI: data,
+        Finance: data,
+        News: data,
+        Life: data,
+        Youtube: data,
+        X: data
       }
+      console.log(aggregatedData)
       insightData.value.categoryNavData = aggregatedData
-      localStorage.setItem(CategoryNavCacheKey, JSON.stringify(insightData.value.categoryNavData))
+      localStorage.setItem('CategoryNavData', JSON.stringify(insightData.value.categoryNavData))
     } catch (error) {
       console.error('Error fetching category nav data:', error)
     }
@@ -70,11 +70,12 @@ const handleWebSocketMessage = (message) => {
     if (message) {
       const messageObj = JSON.parse(message)
       if (messageObj.type === 'update') {
+        console.log('received message')
         const platform = messageObj.content
         if (platform === '36kr') {
-          localStorage.removeItem(AINewCacheKey)
+          localStorage.removeItem('AINewData')
         } else if (platform === 'chaping' || platform === 'aliresearch') {
-          localStorage.removeItem(CategoryNavCacheKey)
+          localStorage.removeItem('CategoryNavData')
         }
       }
     }
@@ -103,7 +104,7 @@ onMounted(async () => {
       v-if="insightData.barrageFlowData"
       :data="insightData.barrageFlowData"
     />
-    <SearchBar class="search-bar" />
+    <!-- <SearchBar class="search-bar" /> -->
     <div class="main-content">
       <CategoryNav
         class="category"

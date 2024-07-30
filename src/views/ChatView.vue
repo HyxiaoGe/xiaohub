@@ -16,7 +16,7 @@ const currentAssistantMessage = ref('')
 const verificationKey = ref('')
 const messagesContainer = ref(null)
 const showScrollButton = ref(false)
-const isVerified = ref(false)
+const isVerified = ref(true)
 const sessions = ref([
   Assistants.smartAssistant,
   Assistants.programmingAssistant,
@@ -35,7 +35,7 @@ onBeforeMount(() => {
   // WebSocketService.initializeWebSocket('ws://localhost:8808/ws')
   WebSocketService.initializeWebSocket(`${process.env.VITE_APP_WEBSOCKET_END_POINT}/chat/ws`)
   WebSocketService.registerMessageHandler(handleWebSocketMessage)
-  isVerified.value = SessionService.get('isVerified') === 'true'
+  // isVerified.value = SessionService.get('isVerified') === 'true'
   loadActiveSession()
   initializeQueues()
   loadSessionsFromLocalStorage()

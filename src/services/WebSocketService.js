@@ -125,7 +125,7 @@ class WebSocketService {
 
   stopHeartbeat() {
     if (this.heartbeatInterval) {
-      console.log('用户未活跃，停止心跳')
+      // console.log('用户未活跃，停止心跳')
       clearInterval(this.heartbeatInterval)
       this.heartbeatInterval = null
       this.missedHeartbeats = 0
