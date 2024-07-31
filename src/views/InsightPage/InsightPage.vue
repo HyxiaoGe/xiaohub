@@ -5,6 +5,7 @@ import AINew from './AINew.vue'
 import CategoryNav from './CategoryNav.vue'
 // import SearchBar from './SearchBar.vue'
 import InsightService from '@/services/InsightService'
+import { ElMessageBox } from 'element-plus'
 
 const insightData = ref({
   barrageFlowData: null,
@@ -71,20 +72,35 @@ const fetchCategoryNavData = async () => {
 
 const checkForNewData = async () => {
   const updates = await InsightService.fetchAndUpdateStatus()
-  let shouldReset = false
   if (updates) {
+    let platformsToUpdate = []
     Object.keys(updates.data).forEach((platform) => {
       if (updates.data[platform]) {
-        shouldReset = true
-        if (platform === '36kr') {
-          localStorage.removeItem('AINewData')
-        } else if (platforms.value.includes(platform)) {
-          localStorage.removeItem('CategoryNavData')
-        }
+        platformsToUpdate.push(platform)
       }
     })
-    if (shouldReset) {
-      await InsightService.fetchAndUpdateStatus(true)
+
+    if (platformsToUpdate.length > 0) {
+      ElMessageBox.confirm('当前页面有新的内容，是否刷新', '新消息提醒', {
+        confirmButtonText: '刷新',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          platformsToUpdate.forEach((platform) => {
+            if (platform === '36kr') {
+              localStorage.removeItem('AINewData')
+            } else if (platforms.value.includes(platform)) {
+              localStorage.removeItem('CategoryNavData')
+            }
+          })
+          //  通知后端已更新至最新数据
+          InsightService.fetchAndUpdateStatus(true)
+          window.location.reload()
+        })
+        .catch((error) => {
+          console.log('error: ', error)
+        })
     }
   }
 }
@@ -92,7 +108,7 @@ const checkForNewData = async () => {
 onMounted(async () => {
   try {
     await Promise.all([fetchAINewData(), fetchCategoryNavData()])
-    timer.value = setInterval(checkForNewData, 30000)
+    timer.value = setTimeout(checkForNewData, 5000)
   } catch (error) {
     console.error('Error during component initialization:', error)
   }

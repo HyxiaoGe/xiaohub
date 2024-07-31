@@ -32,6 +32,7 @@ const tabNames = {
         <ul>
           <li v-for="item in items" :key="item.link">
             <a :href="item.link" target="_blank">{{ item.title }}</a>
+            <span>{{ item.publication_date }}</span>
           </li>
         </ul>
       </el-tab-pane>
@@ -64,28 +65,42 @@ const tabNames = {
 .el-tab-pane {
   padding: 10px;
   height: calc(75vh - 50px);
+  overflow-y: auto;
 }
 
-/** */
 ul {
   padding: 0;
   list-style: none;
 }
 
 li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 3px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 li:last-child {
   margin-bottom: 0;
+  border-bottom: none;
 }
 
 a {
   color: #0645ad;
   text-decoration: none;
+  flex-grow: 1;
 }
 
 a:hover {
   text-decoration: underline;
+}
+
+span {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: #888;
+  margin-left: 15px;
 }
 </style>
