@@ -12,7 +12,7 @@ const activeName = ref('Facts')
 
 const tabNames = {
   Facts: '快讯',
-  Technology: '科技',
+  Technology: '技术',
   Life: '生活',
   AI: 'AI',
   Youtube: 'Youtube',
