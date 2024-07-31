@@ -22,11 +22,13 @@
 .messages {
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow-y: hidden;
     margin: 0 10px;
+    padding-bottom: 30px;
 }
 
 .message {
+    min-width: 100px;
     display: flex;
     flex-direction: column;
     align-items: center;

@@ -73,8 +73,8 @@ const checkForNewData = async () => {
   const updates = await InsightService.fetchAndUpdateStatus()
   let shouldReset = false
   if (updates) {
-    Object.keys(updates).forEach((platform) => {
-      if (updates[platform]) {
+    Object.keys(updates.data).forEach((platform) => {
+      if (updates.data[platform]) {
         shouldReset = true
         if (platform === '36kr') {
           localStorage.removeItem('AINewData')
@@ -92,7 +92,7 @@ const checkForNewData = async () => {
 onMounted(async () => {
   try {
     await Promise.all([fetchAINewData(), fetchCategoryNavData()])
-    timer.value = setInterval(checkForNewData, 3600000)
+    timer.value = setInterval(checkForNewData, 30000)
   } catch (error) {
     console.error('Error during component initialization:', error)
   }
