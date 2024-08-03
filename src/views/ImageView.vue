@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { debounce } from 'lodash'
 import { ElMessage } from 'element-plus'
 import sessionService from '@/services/SessionService'
@@ -11,6 +11,8 @@ const conversation = ref([])
 const userMessage = ref('')
 const currentAssistantMessage = ref('')
 const imgUrl = ref('')
+const showScrollButton = ref(false)
+const messagesContainer = ref(null)
 
 onMounted(async () => {
   // webSocketService.initializeWebSocket('ws://localhost:8809/ws')
@@ -20,6 +22,18 @@ onMounted(async () => {
   if (sessionsFromStorage) {
     conversation.value = JSON.parse(sessionsFromStorage)
   }
+  if (messagesContainer.value) {
+    messagesContainer.value.addEventListener('scroll', onScroll)
+    scrollToBottom()
+  }
+})
+
+onBeforeUnmount(() => {
+  if (messagesContainer.value) {
+    messagesContainer.value.removeEventListener('scroll', onScroll)
+  }
+  webSocketService.unregisterMessageHandler(handleWebSocketMessage)
+  // WebSocketService.closeWebSocket()
 })
 
 watch(
@@ -65,6 +79,7 @@ const generateImage = async () => {
     webSocketService.sendMessage(JSON.stringify(message))
   }
   userMessage.value = ''
+  scrollToBottom()
 }
 
 const handleWebSocketMessage = (message) => {
@@ -81,6 +96,7 @@ const handleWebSocketMessage = (message) => {
       // 文本消息处理
       currentAssistantMessage.value += messageObj.content
       updateConversation()
+      scrollToBottom()
     }
   } else if (messageObj.type === 'errMsg') {
     ElMessage.error(messageObj.content)
@@ -92,6 +108,7 @@ const updateConversationWithImage = () => {
     conversation.value[conversation.value.length - 1].imageUrl = imgUrl.value
     conversation.value[conversation.value.length - 1].done = true
     imgUrl.value = ''
+    scrollToBottom()
   }
 }
 
@@ -112,11 +129,13 @@ const updateConversation = () => {
     imgUrl.value = ''
   }
   sessions.value = conversation.value
+  scrollToBottom()
 }
 
 const markLastMessageAsDone = () => {
   if (conversation.value.length > 0) {
     conversation.value[conversation.value.length - 1].done = true
+    scrollToBottom()
   }
 }
 
@@ -125,6 +144,22 @@ const debouncedSave = debounce(() => {
   // 防抖技术可以确保在一定时间内，无论发生多少次更新，只有最后一次操作后的一段时间才会触发函数执行。
   sessionService.save('imageSessions', conversation.value)
 }, 500)
+
+const onScroll = () => {
+  if (messagesContainer.value) {
+    const nearBottom =
+      messagesContainer.value.scrollHeight -
+        messagesContainer.value.scrollTop -
+        messagesContainer.value.clientHeight <
+      10
+    showScrollButton.value = !nearBottom
+  }
+}
+const scrollToBottom = () => {
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
+}
 
 const clearConversation = () => {
   if (confirm('确定要清空上下文吗？')) {
@@ -152,6 +187,14 @@ const clearConversation = () => {
           ></div>
           <img v-if="msg.imageUrl" :src="msg.imageUrl" alt="Generate image" class="message-image" />
         </div>
+        <el-button
+          type="primary"
+          v-show="showScrollButton"
+          class="scroll-to-bottom"
+          style="font-size: 24px"
+          icon="Bottom"
+          @click="scrollToBottom"
+        />
       </div>
       <div v-if="isVerified">
         <div class="input-area">

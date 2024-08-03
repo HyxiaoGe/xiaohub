@@ -22,7 +22,7 @@
 .messages {
     display: flex;
     flex-direction: column;
-    overflow-y: hidden;
+    overflow-y: auto;
     margin: 0 10px;
     padding-bottom: 30px;
 }
