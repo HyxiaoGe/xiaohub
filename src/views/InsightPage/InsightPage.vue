@@ -74,11 +74,19 @@ const checkForNewData = async () => {
   const updates = await InsightService.fetchAndUpdateStatus()
   if (updates) {
     let platformsToUpdate = []
+    const allTimestamps = JSON.parse(localStorage.getItem('platformTimestamps')) || {}
     Object.keys(updates.data).forEach((platform) => {
-      if (updates.data[platform]) {
-        platformsToUpdate.push(platform)
+      const platformData = updates.data[platform]
+      const localTimestamp = allTimestamps[platform]
+      if (!localTimestamp || platformData.timestamp > parseInt(localTimestamp)) {
+        if (updates.data[platform]) {
+          platformsToUpdate.push(platform)
+          allTimestamps[platform] = platformData.timestamp
+        }
       }
     })
+
+    localStorage.setItem('platformTimestamps', JSON.stringify(allTimestamps))
 
     if (platformsToUpdate.length > 0) {
       ElMessageBox.confirm('当前页面有新的内容，是否刷新', '新消息提醒', {
@@ -95,7 +103,7 @@ const checkForNewData = async () => {
             }
           })
           //  通知后端已更新至最新数据
-          InsightService.fetchAndUpdateStatus(true)
+          // InsightService.fetchAndUpdateStatus(true)
           window.location.reload()
         })
         .catch((error) => {
