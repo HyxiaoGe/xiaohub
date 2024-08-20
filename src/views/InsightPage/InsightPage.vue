@@ -74,7 +74,7 @@ const checkForNewData = async () => {
   const updates = await InsightService.fetchAndUpdateStatus()
   if (updates) {
     let platformsToUpdate = []
-    const allTimestamps = JSON.parse(localStorage.getItem('platformTimestamps')) || {}
+    const allTimestamps = JSON.parse(localStorage.getItem('platformUpdates')) || {}
     Object.keys(updates.data).forEach((platform) => {
       const platformData = updates.data[platform]
       const localTimestamp = allTimestamps[platform]
@@ -86,7 +86,7 @@ const checkForNewData = async () => {
       }
     })
 
-    localStorage.setItem('platformTimestamps', JSON.stringify(allTimestamps))
+    localStorage.setItem('platformUpdates', JSON.stringify(allTimestamps))
 
     if (platformsToUpdate.length > 0) {
       ElMessageBox.confirm('当前页面有新的内容，是否刷新', '新消息提醒', {
