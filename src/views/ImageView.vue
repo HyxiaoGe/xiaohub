@@ -14,9 +14,11 @@ const imgUrl = ref('')
 const showScrollButton = ref(false)
 const messagesContainer = ref(null)
 
+const WEBSOCKET_URL = `${process.env.VITE_APP_WEBSOCKET_END_POINT}/image/ws`
+const DEBOUNCE_DELAY = 500
+
 onMounted(async () => {
-  // webSocketService.initializeWebSocket('ws://localhost:8809/ws')
-  webSocketService.initializeWebSocket(`${process.env.VITE_APP_WEBSOCKET_END_POINT}/image/ws`)
+  webSocketService.initializeWebSocket(WEBSOCKET_URL)
   webSocketService.registerMessageHandler(handleWebSocketMessage)
   const sessionsFromStorage = sessionService.get('imageSessions')
   if (sessionsFromStorage) {
@@ -33,18 +35,10 @@ onBeforeUnmount(() => {
     messagesContainer.value.removeEventListener('scroll', onScroll)
   }
   webSocketService.unregisterMessageHandler(handleWebSocketMessage)
-  // WebSocketService.closeWebSocket()
 })
 
-watch(
-  conversation,
-  () => {
-    debouncedSave()
-  },
-  { deep: true }
-)
+watch(conversation, debouncedSave, { deep: true })
 
-// const isVerified = sessionService.get('isVerified') === 'true'
 const isVerified = 'true'
 const generateImage = async () => {
   if (!isVerified) {
@@ -53,25 +47,14 @@ const generateImage = async () => {
   }
   const trimmedMessage = userMessage.value.trim()
   if (trimmedMessage && webSocketService.getReadyState()) {
-    conversation.value.push({
-      text: trimmedMessage,
-      time: new Date(),
-      role: 'user',
-      done: true
-    })
-    conversation.value.push({
-      text: '正在生成图像，请稍候...',
-      role: 'assistant',
-      done: false
-    })
+    addMessage(trimmedMessage, 'user', true)
+    addMessage('正在生成图像，请稍候...', 'assistant', false)
 
-    let conversationContent = {}
-    if (conversation.value.length >= 2) {
-      const penultimateConversation = conversation.value[conversation.value.length - 2]
-      conversationContent = {
-        content: penultimateConversation.text
-      }
-    }
+    const conversationContent =
+      conversation.value.length >= 2
+        ? { content: conversation.value[conversation.value.length - 2].text }
+        : {}
+
     const message = {
       action: 'session',
       conversation: conversationContent
@@ -93,7 +76,6 @@ const handleWebSocketMessage = (message) => {
       currentAssistantMessage.value = ''
       imgUrl.value = ''
     } else {
-      // 文本消息处理
       currentAssistantMessage.value += messageObj.content
       updateConversation()
       scrollToBottom()
@@ -103,10 +85,20 @@ const handleWebSocketMessage = (message) => {
   }
 }
 
+const addMessage = (text, role, done) => {
+  conversation.value.push({
+    text,
+    time: new Date(),
+    role,
+    done
+  })
+}
+
 const updateConversationWithImage = () => {
   if (conversation.value.length > 0) {
-    conversation.value[conversation.value.length - 1].imageUrl = imgUrl.value
-    conversation.value[conversation.value.length - 1].done = true
+    const lastMessage = conversation.value[conversation.value.length - 1]
+    lastMessage.imageUrl = imgUrl.value
+    lastMessage.done = true
     imgUrl.value = ''
     scrollToBottom()
   }
@@ -114,18 +106,10 @@ const updateConversationWithImage = () => {
 
 const updateConversation = () => {
   if (conversation.value.length > 0) {
-    // 更新最后一条消息
     const assistantMessages = conversation.value.filter((msg) => msg.role === 'assistant')
     assistantMessages[assistantMessages.length - 1].text = currentAssistantMessage.value
   } else {
-    // 添加新的消息
-    conversation.value.push({
-      text: currentAssistantMessage.value,
-      imageUrl: imgUrl.value,
-      time: new Date(),
-      role: 'assistant',
-      done: false
-    })
+    addMessage(currentAssistantMessage.value, 'assistant', false)
     imgUrl.value = ''
   }
   sessions.value = conversation.value
@@ -140,10 +124,8 @@ const markLastMessageAsDone = () => {
 }
 
 const debouncedSave = debounce(() => {
-  // 防抖（Debounce）函数
-  // 防抖技术可以确保在一定时间内，无论发生多少次更新，只有最后一次操作后的一段时间才会触发函数执行。
   sessionService.save('imageSessions', conversation.value)
-}, 500)
+}, DEBOUNCE_DELAY)
 
 const onScroll = () => {
   if (messagesContainer.value) {
@@ -155,6 +137,7 @@ const onScroll = () => {
     showScrollButton.value = !nearBottom
   }
 }
+
 const scrollToBottom = () => {
   if (messagesContainer.value) {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight

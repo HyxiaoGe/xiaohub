@@ -20,17 +20,13 @@ const timer = ref(null)
 const fetchAINewData = async () => {
   const cachedAINewData = localStorage.getItem('AINewData')
   if (cachedAINewData) {
-    const parseAINewData = JSON.parse(cachedAINewData)
-    insightData.value.aiNewData = { ...parseAINewData }
+    insightData.value.aiNewData = JSON.parse(cachedAINewData)
   } else {
     try {
-      const response = await InsightService.getPlatformData('36kr')
-      // insightData.value.barrageFlowData = response.data.map((it) => it.title)
-      const aggregatedData = {
-        KR_36_AINews: response.data
-      }
+      const { data } = await InsightService.getPlatformData('36kr')
+      const aggregatedData = { KR_36_AINews: data }
       insightData.value.aiNewData = aggregatedData
-      localStorage.setItem('AINewData', JSON.stringify(insightData.value.aiNewData))
+      localStorage.setItem('AINewData', JSON.stringify(aggregatedData))
     } catch (error) {
       console.error('Error fetching insight data:', error)
     }
@@ -41,33 +37,35 @@ const fetchCategoryNavData = async () => {
   const cachedCategoryData = localStorage.getItem('CategoryNavData')
   if (cachedCategoryData) {
     insightData.value.categoryNavData = JSON.parse(cachedCategoryData)
-  } else {
-    try {
-      const responses = await Promise.all(
-        platforms.value.map((platform) => InsightService.getPlatformData(platform))
-      )
+    return
+  }
 
-      const defaultData = { title: '暂无内容' }
+  try {
+    const responses = await Promise.all(
+      platforms.value.map((platform) => InsightService.getPlatformData(platform))
+    )
 
-      const aggregatedData = {
-        Facts: responses[0].data,
-        Technology: responses[1].data,
-        Life: responses[2].data,
-        AI: responses[3].data,
-        Youtube: [defaultData],
-        X: [defaultData]
-      }
+    const defaultData = { title: '暂无内容' }
 
-      responses.forEach((response, index) => {
-        response.data.forEach((item) => {
-          item.source = platforms[index]
-        })
-      })
-      insightData.value.categoryNavData = aggregatedData
-      localStorage.setItem('CategoryNavData', JSON.stringify(aggregatedData))
-    } catch (error) {
-      console.error('Error fetching category nav data:', error)
+    const aggregatedData = {
+      Facts: responses[0].data,
+      Technology: responses[1].data,
+      Life: responses[2].data,
+      AI: responses[3].data,
+      Youtube: [defaultData],
+      X: [defaultData]
     }
+
+    responses.forEach((response, index) => {
+      response.data.forEach((item) => {
+        item.source = platforms[index]
+      })
+    })
+
+    insightData.value.categoryNavData = aggregatedData
+    localStorage.setItem('CategoryNavData', JSON.stringify(aggregatedData))
+  } catch (error) {
+    console.error('Error fetching category nav data:', error)
   }
 }
 
@@ -77,13 +75,20 @@ const checkForNewData = async () => {
   if (updates) {
     let platformsToUpdate = []
     const allTimestamps = JSON.parse(localStorage.getItem('platformUpdates')) || {}
+    console.log('allTimestamps from localStorage: ', allTimestamps)
+
     Object.keys(updates.data).forEach((platform) => {
       const platformData = updates.data[platform]
-      const localTimestamp = allTimestamps[platform]
-      if (!localTimestamp || platformData.timestamp > parseInt(localTimestamp)) {
+      const serverTimestamp = parseInt(platformData)
+      const localTimestamp = parseInt(allTimestamps[platform])
+      console.log(
+        `Checking platform: ${platform}, server timestamp: ${serverTimestamp}, local timestamp: ${localTimestamp}`
+      )
+
+      if (!localTimestamp || serverTimestamp > localTimestamp) {
         if (updates.data[platform]) {
           platformsToUpdate.push(platform)
-          allTimestamps[platform] = platformData.timestamp
+          allTimestamps[platform] = serverTimestamp
         }
       }
     })
