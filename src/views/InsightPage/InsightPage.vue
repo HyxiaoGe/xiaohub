@@ -48,6 +48,7 @@ const fetchCategoryNavData = async () => {
       )
 
       const defaultData = { title: '暂无内容' }
+
       const aggregatedData = {
         Facts: responses[0].data,
         Technology: responses[1].data,
@@ -72,6 +73,7 @@ const fetchCategoryNavData = async () => {
 
 const checkForNewData = async () => {
   const updates = await InsightService.fetchAndUpdateStatus()
+  console.log('updates: ', updates)
   if (updates) {
     let platformsToUpdate = []
     const allTimestamps = JSON.parse(localStorage.getItem('platformUpdates')) || {}
@@ -87,6 +89,8 @@ const checkForNewData = async () => {
     })
 
     localStorage.setItem('platformUpdates', JSON.stringify(allTimestamps))
+
+    console.log('platformsToUpdate: ', platformsToUpdate)
 
     if (platformsToUpdate.length > 0) {
       ElMessageBox.confirm('当前页面有新的内容，是否刷新', '新消息提醒', {
