@@ -3,7 +3,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import BarrageFlow from './BarrageFlow.vue'
 import AINew from './AINew.vue'
 import CategoryNav from './CategoryNav.vue'
-// import SearchBar from './SearchBar.vue'
+import SearchBar from './SearchBar.vue'
 import InsightService from '@/services/InsightService'
 import { ElMessageBox } from 'element-plus'
 
@@ -145,7 +145,7 @@ onBeforeUnmount(() => {
       v-if="insightData.barrageFlowData"
       :data="insightData.barrageFlowData"
     />
-    <!-- <SearchBar class="search-bar" /> -->
+    <SearchBar class="search-bar" />
     <div class="main-content">
       <CategoryNav
         class="category"
