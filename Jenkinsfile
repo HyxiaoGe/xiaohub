@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    tools{
-        git 'Server Git'
-    }
     options {
         timestamps()
     }
@@ -12,9 +9,7 @@ pipeline {
                 script {
                     retry(3) {
                         timeout(time: 5, unit: 'MINUTES') {
-                            git branch: 'master',
-                                url: 'https://github.com/HyxiaoGe/xiaohub.git',
-                                credentialsId: 'login_credentials'
+                            checkout([$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: 'https://github.com/HyxiaoGe/xiaohub.git', credentialsId: 'login_credentials']]])
                         }
                     }
                 }
@@ -24,10 +19,10 @@ pipeline {
             steps {
                 script {
                     echo 'prepare necessary environment...'
-                    writeFile file: '.env', text: """
-                    VITE_APP_END_POINT=${env.END_POINT}
-                    VITE_APP_WEBSOCKET_END_POINT=ws://${env.END_POINT}
-                    VITE_APP_HTTP_END_POINT=http://${env.END_POINT}
+                    sh """
+                    echo "VITE_APP_END_POINT=${env.END_POINT}" > .env
+                    echo "VITE_APP_WEBSOCKET_END_POINT=ws://${env.END_POINT}" >> .env
+                    echo "VITE_APP_HTTP_END_POINT=http://${env.END_POINT}" >> .env
                     """
                 }
             }
@@ -63,9 +58,9 @@ pipeline {
         failure {
             echo 'Build failed!'
             echo 'Checking for errors...'
-            // script {
-            //     sh 'cat /var/log/jenkins/jenkins.log'
-            // }
+            script {
+                sh 'cat /var/log/jenkins/jenkins.log'
+            }
         }
     }
 }
